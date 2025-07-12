@@ -1,5 +1,5 @@
-from fastapi import FastAPI, HTTPException
-from models import UserCreate,UserLogin
+from fastapi import FastAPI, HTTPException, Header
+from models import UserCreate,UserLogin,ItemCreate
 from mongo import db
 import bcrypt
 import secrets
@@ -71,3 +71,35 @@ def login(user: UserLogin):
     }
 
 
+@app.get("/items")
+def get_all_items():
+    items_list = list(items.find())
+    
+    # Convert ObjectId to string
+    for item in items_list:
+        item["_id"] = str(item["_id"])
+    
+    return items_list
+
+@app.post("/add_item")
+def add_item(item: ItemCreate):
+    item_dict = item.dict()
+
+    # Set default status if not passed
+    if not item_dict.get("status"):
+        item_dict["status"] = "Available"
+
+    # Insert into MongoDB
+    result = items.insert_one(item_dict)
+
+    return {
+        "message": "Item uploaded successfully",
+        "item_id": str(result.inserted_id)
+    }
+
+def get_current_user(token: str = Header(...)):
+    user = db["users"].find_one({"auth_token": token})
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    user["_id"] = str(user["_id"])
+    return user

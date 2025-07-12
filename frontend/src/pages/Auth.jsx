@@ -24,34 +24,39 @@ const LoginForm = ({ onToggle }) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    
+
     try {
-      // In a real app, this would be an API call
-      // For demo purposes, we're simulating successful login
-      setTimeout(() => {
-        // Check if email and password are valid (for demo purposes)
-        if (formData.email && formData.password.length >= 6) {
-          const userData = {
-            email: formData.email,
-            // Don't store passwords in localStorage in a real app
-            // This is just for demo purposes
-            id: Math.random().toString(36).substr(2, 9),
-            isAdmin: formData.isAdmin
-          };
-          
-          // Navigate to admin dashboard if admin login
-          if (formData.isAdmin) {
-            navigate('/admin-dashboard');
-          } else {
-            navigate('/user-dashboard');
-          }
+      // Make API call to backend for login
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          isAdmin: formData.isAdmin
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // You might want to store a token or user info here
+        // localStorage.setItem('token', data.token);
+
+        // Navigate to admin dashboard if admin login
+        if (formData.isAdmin) {
+          navigate('/admin-dashboard');
         } else {
-          setError('Invalid email or password (password must be at least 6 characters)');
+          navigate('/user-dashboard');
         }
-        setLoading(false);
-      }, 1000);
+      } else {
+        setError(data.message || 'Invalid email or password (password must be at least 6 characters)');
+      }
     } catch (err) {
       setError('Login failed. Please try again.');
+    } finally {
       setLoading(false);
     }
   };
@@ -180,25 +185,36 @@ const SignUpForm = ({ onToggle }) => {
     setLoading(true);
     
     try {
-      // In a real app, this would be an API call
-      // For demo purposes, we're simulating successful signup
-      setTimeout(() => {
-        const userData = {
+      // API call to backend signup endpoint
+      const response = await fetch('/api/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
           email: formData.email,
-          // Don't store passwords in localStorage in a real app
-          // This is just for demo purposes
-          id: Math.random().toString(36).substr(2, 9),
+          password: formData.password,
           isAdmin: formData.isAdmin
-        };
-        
-        // Navigate to admin dashboard if admin signup
-        if (formData.isAdmin) {
-          navigate('/admin-dashboard');
-        } else {
-          navigate('/user-dashboard');
-        }
+        })
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        setError(data?.message || 'Signup failed. Please try again.');
         setLoading(false);
-      }, 1000);
+        return;
+      }
+
+      // Optionally, you can parse the user data if returned
+      // const userData = await response.json();
+
+      // Navigate to admin dashboard if admin signup
+      if (formData.isAdmin) {
+        navigate('/admin-dashboard');
+      } else {
+        navigate('/user-dashboard');
+      }
+      setLoading(false);
     } catch (err) {
       setError('Signup failed. Please try again.');
       setLoading(false);

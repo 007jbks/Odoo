@@ -7,6 +7,7 @@ import UserDashboard from './pages/UserDashboard'
 import ItemDetail from './pages/ItemDetail'
 import BrowseItems from './pages/BrowseItems'
 import AddItem from './pages/AddItem'
+import Notifications from './pages/Notifications'
 import Navbar from './components/Navbar'
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
           <Route path='/item/:id' element={<ItemDetail/>}/>
           <Route path='/browse' element={<BrowseItems/>}/>
           <Route path='/add-item' element={<AddItem/>}/>
+          <Route path='/notifications' element={<Notifications/>}/>
         </Routes>
       </div>
     </div>

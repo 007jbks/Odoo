@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "framer-motion": "^12.23.3",
+    "js-cookie": "^3.0.5",
+    "js-cookie-parser": "^0.0.1-security",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

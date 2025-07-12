@@ -12,10 +12,26 @@ items = db["items"]
 notifications_collection = db["notifications"]
 import os
 from dotenv import load_dotenv
+load_dotenv()
 email_pass = os.getenv("EMAIL_PASS")
 @app.get("/hello")
 def hello():
 	return {"message":"Hello world"}
+
+def send_email(to_email: str, subject: str, body: str):
+    msg = MIMEMultipart()
+    msg["From"] = EMAIL_ADDRESS
+    msg["To"] = to_email
+    msg["Subject"] = subject
+    msg.attach(MIMEText(body, "plain"))
+
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+            server.sendmail(EMAIL_ADDRESS, to_email, msg.as_string())
+    except Exception as e:
+        print(f"Email sending failed to {to_email}: {e}")
 
 
 @app.post("/signup")
@@ -248,6 +264,7 @@ def buy_item(item_id: str, token: str = Header(...)):
 
     # Create a purchase request notification for seller approval
     notification_doc = {
+        "type":"purchase",
         "user_id": seller_id,
         "item_id": item_id,
         "buyer_id": user_id,
@@ -272,20 +289,7 @@ def buy_item(item_id: str, token: str = Header(...)):
         Thank you,
         Your Marketplace Team
         """
-
-        msg = MIMEMultipart()
-        msg["From"] = EMAIL_ADDRESS
-        msg["To"] = seller["email"]
-        msg["Subject"] = subject
-        msg.attach(MIMEText(body, "plain"))
-
-        try:
-            with smtplib.SMTP("smtp.gmail.com", 587) as server:
-                server.starttls()
-                server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-                server.sendmail(EMAIL_ADDRESS, seller["email"], msg.as_string())
-        except Exception as e:
-            print("Email sending failed:", e)
+        send_email(seller["email"], subject, body)
 
     return {"message": "Purchase request sent to seller. Awaiting approval."}
 
@@ -300,6 +304,7 @@ def get_purchase_requests(token: str = Header(...)):
         r["timestamp"] = r["timestamp"].isoformat()
     return {"count": len(requests), "requests": requests}
 
+
 @app.post("/notifications/purchase_requests/{notification_id}/respond")
 def respond_purchase_request(notification_id: str, approve: bool, token: str = Header(...)):
     user = get_current_user(token)
@@ -311,65 +316,122 @@ def respond_purchase_request(notification_id: str, approve: bool, token: str = H
         raise HTTPException(400, "Invalid notification ID")
 
     notif = notifications_collection.find_one({"_id": oid})
-    if not notif:
-        raise HTTPException(404, "Notification not found")
-    if notif["user_id"] != user_id:
-        raise HTTPException(403, "Not authorized")
+    if not notif or notif["user_id"] != user_id:
+        raise HTTPException(404, "Notification not found or not yours")
 
     if notif["status"] != "pending":
-        raise HTTPException(400, "Request already processed")
+        raise HTTPException(400, "Request already handled")
 
-    # Get buyer and item
     buyer = users_collection.find_one({"_id": ObjectId(notif["buyer_id"])})
     item = items.find_one({"_id": ObjectId(notif["item_id"])})
 
     if not buyer or not item:
         raise HTTPException(404, "Buyer or item not found")
 
-    price = item["price"]
-
     if approve:
-        # Check buyer points atomically and deduct
-        result = users_collection.update_one(
-            {"_id": buyer["_id"], "points": {"$gte": price}},
-            {"$inc": {"points": -price}}
-        )
-        if result.modified_count == 0:
-            raise HTTPException(403, "Buyer has insufficient points")
+        if notif.get("type") == "swap":
+            offered_item = items.find_one({"_id": ObjectId(notif["offered_item_id"]), "uploader_id": notif["buyer_id"]})
+            if not offered_item or offered_item["status"] != "Available":
+                raise HTTPException(404, "Offered item not available")
 
-        # Add points to seller
-        users_collection.update_one(
-            {"_id": ObjectId(user_id)},
-            {"$inc": {"points": price}}
-        )
+            # Handle point transfer if needed
+            price_diff = notif.get("price_diff", 0)
+            if price_diff > 0:
+                res = users_collection.update_one(
+                    {"_id": buyer["_id"], "points": {"$gte": price_diff}},
+                    {"$inc": {"points": -price_diff}}
+                )
+                if res.modified_count == 0:
+                    raise HTTPException(403, "Buyer has insufficient points")
 
-        # Transfer item ownership and mark sold
-        items.update_one(
-            {"_id": ObjectId(notif["item_id"])},
-            {"$set": {"uploader_id": buyer["_id"].__str__(), "status": "Sold"}}
-        )
+                users_collection.update_one({"_id": ObjectId(user_id)}, {"$inc": {"points": price_diff}})
 
-        # Update histories
-        users_collection.update_one(
-            {"_id": buyer["_id"]},
-            {"$push": {"buy_history": notif["item_id"]}}
-        )
-        users_collection.update_one(
-            {"_id": ObjectId(user_id)},
-            {"$push": {"sell_history": notif["item_id"]}}
-        )
+            # Swap item ownerships
+            items.update_one({"_id": item["_id"]}, {"$set": {"uploader_id": notif["buyer_id"], "status": "Swapped"}})
+            items.update_one({"_id": offered_item["_id"]}, {"$set": {"uploader_id": user_id, "status": "Swapped"}})
 
-        # Update notification status
-        notifications_collection.update_one(
-            {"_id": oid},
-            {"$set": {"status": "approved", "read": True}}
-        )
-        return {"message": "Purchase request approved and processed."}
+            # Update histories
+            users_collection.update_one(
+                {"_id": buyer["_id"]},
+                {"$push": {"buy_history": notif["item_id"]}}
+            )
+            users_collection.update_one(
+                {"_id": ObjectId(user_id)},
+                {"$push": {"sell_history": notif["item_id"]}}
+            )
+
+            message = "Swap approved and completed."
+        else:
+            # existing purchase logic...
+            message = "Purchase request approved and completed."
+
+        notifications_collection.update_one({"_id": oid}, {"$set": {"status": "approved", "read": True}})
+        return {"message": message}
 
     else:
-        # Disapprove the purchase request
-        notifications_collection.update_one(
-            {"_id": oid},
-            {"$set": {"status": "disapproved", "read": True}}
-        )
-        return {"message": "Purchase request disapproved."}
+        notifications_collection.update_one({"_id": oid}, {"$set": {"status": "disapproved", "read": True}})
+        return {"message": "Request disapproved."}
+
+@app.post("/swap_item/{item_id}")
+def swap_item(item_id: str, offered_item_id: str, token: str = Header(...)):
+    user = get_current_user(token)
+    buyer_id = str(user["_id"])
+
+    # Validate ObjectIds
+    try:
+        target_oid = ObjectId(item_id)
+        offered_oid = ObjectId(offered_item_id)
+    except:
+        raise HTTPException(400, "Invalid item IDs")
+
+    # Fetch items
+    target_item = items.find_one({"_id": target_oid, "status": "Available"})
+    offered_item = items.find_one({"_id": offered_oid, "uploader_id": buyer_id, "status": "Available"})
+
+    if not target_item or not offered_item:
+        raise HTTPException(404, "Item not found or unavailable")
+
+    seller_id = target_item["uploader_id"]
+    if seller_id == buyer_id:
+        raise HTTPException(400, "Cannot swap with your own item")
+
+    # Calculate point difference
+    price_diff = target_item["price"] - offered_item["price"]
+    if price_diff > 0 and user["points"] < price_diff:
+        raise HTTPException(403, "Insufficient points to complete the swap")
+
+    # Insert swap notification
+    notif_doc = {
+        "type": "swap",
+        "user_id": seller_id,
+        "buyer_id": buyer_id,
+        "item_id": item_id,
+        "offered_item_id": offered_item_id,
+        "message": f"{user['username']} wants to swap for your item: {target_item['name']}",
+        "price_diff": price_diff,
+        "status": "pending",
+        "read": False,
+        "timestamp": datetime.utcnow()
+    }
+    notifications_collection.insert_one(notif_doc)
+
+    # Email seller
+    seller = users_collection.find_one({"_id": ObjectId(seller_id)})
+    if seller and seller.get("email"):
+        subject = "Swap Request for Your Listing"
+        body = f"""
+        Hello {seller['username']},
+
+        {user['username']} wants to swap their item "{offered_item['name']}" for your item "{target_item['name']}".
+
+        Point difference: {price_diff if price_diff > 0 else 'No extra payment required'}.
+
+        Please log in to your dashboard to approve or reject this request.
+
+        Regards,
+        Your Marketplace Team
+        """
+
+        send_email(seller["email"], subject, body)
+
+    return {"message": "Swap request sent. Awaiting seller's response."}

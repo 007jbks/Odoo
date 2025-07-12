@@ -9,7 +9,9 @@ from bson import ObjectId
 app = FastAPI()
 users_collection = db["users"]
 items = db["items"]
-
+import os
+from dotenv import load_dotenv
+email_pass = os.getenv("EMAIL_PASS")
 @app.get("/hello")
 def hello():
 	return {"message":"Hello world"}
@@ -208,6 +210,10 @@ def dashboard(token: str = Header(...)):
         "listing_number": user.get("listing_number", 0)
     }
 
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
 @app.post("/buy_item/{item_id}")
 def buy_item(item_id: str, token: str = Header(...)):
     user = get_current_user(token)
@@ -219,7 +225,7 @@ def buy_item(item_id: str, token: str = Header(...)):
         raise HTTPException(status_code=400, detail="Invalid item ID")
 
     # Find the item and ensure it's available
-    item = items.find_one({"_id": oid, "status": "Available"})
+    item = items_collection.find_one({"_id": oid, "status": "Available"})
     if not item:
         raise HTTPException(status_code=404, detail="Item not available")
 
@@ -231,34 +237,43 @@ def buy_item(item_id: str, token: str = Header(...)):
     if seller_id == user_id:
         raise HTTPException(status_code=400, detail="Cannot buy your own item")
 
-    # Deduct points from buyer atomically and check if deduction succeeded
-    buyer_update = users_collection.update_one(
-        {"_id": user_id, "points": {"$gte": price}},
-        {"$inc": {"points": -price}}
-    )
-    if buyer_update.modified_count == 0:
-        raise HTTPException(status_code=403, detail="Insufficient points")
+    seller = users_collection.find_one({"_id": seller_id})
+    if not seller or "email" not in seller:
+        raise HTTPException(status_code=404, detail="Seller not found or missing email")
 
-    # Add points to seller
-    users_collection.update_one(
-        {"_id": seller_id},
-        {"$inc": {"points": price}}
-    )
+    buyer_name = user.get("username", "A user")
+    seller_email = seller["email"]
+    item_name = item.get("name", "an item")
 
-    # Transfer ownership and mark as sold
-    items_collection.update_one(
-        {"_id": oid},
-        {"$set": {"uploader_id": str(user_id), "status": "Sold"}}
-    )
+    # Compose email
+    sender_email = "jon00doe00297@gmail.com"
+    sender_password = email_pass  # Use environment variables for real apps!
 
-    # Update user histories
-    users_collection.update_one(
-        {"_id": user_id},
-        {"$push": {"buy_history": item_id}}
-    )
-    users_collection.update_one(
-        {"_id": seller_id},
-        {"$push": {"sell_history": item_id}}
-    )
+    message = MIMEMultipart()
+    message["From"] = sender_email
+    message["To"] = seller_email
+    message["Subject"] = f"Interest in your listing: {item_name}"
 
-    return {"message": "Item purchased successfully"}
+    body = f"""
+    Hello {seller.get('username', 'Seller')},
+
+    {buyer_name} is interested in buying your listing: "{item_name}" priced at {price} points.
+
+    Please get in touch with the buyer to proceed with the transaction.
+
+    Best regards,
+    Your Marketplace Team
+    """
+
+    message.attach(MIMEText(body, "plain"))
+
+    # Send email via SMTP
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, seller_email, message.as_string())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
+
+    return {"message": "Seller has been notified of your interest."}
+

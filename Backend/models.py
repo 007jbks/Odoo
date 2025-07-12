@@ -25,9 +25,12 @@ class ItemCreate(BaseModel):
     description:str
     condition:str
     category:str
-    price:int
     status:str
     date:str
+    size:str
+    gender:str
+    original_price:int
+    purchasing_date:int
     image1url:str
     image2url: Optional[str] = None
     image3url: Optional[str] = None

@@ -97,4 +97,43 @@ ReWear is a web-based platform that empowers users to exchange their unused clot
 
 ---
 
+## 🛠️ How to Use
+
+This section explains how to set up the ReWear platform locally for development and testing.
+
+---
+
+### 1️⃣ Clone the Repository
+
+git clone https://github.com/your-username/rewear.git
+cd rewear 
+
+### 2️⃣ Backend Setup (FastAPI)
+📦 Install Dependencies
+
+cd backend
+pip install -r requirements.txt
+### 📁 Create .env file
+Create a .env file in the backend/ directory with the following content:
+
+EMAIL_PASS=your_gmail_app_password
+ADMIN_USERNAME=your_admin_username
+ADMIN_PASSWORD=your_admin_password
+ADMIN_TOKEN=your_secret_admin_token
+### ▶️ Run the Backend Server
+
+uvicorn main:app --reload
+API should now be accessible at: http://localhost:8000
+
+3️⃣ Frontend Setup (React.js)
+### 📦 Install Dependencies
+cd frontend
+npm install
+### ▶️ Run the Frontend Development Server
+npm start
+App will be running at: http://localhost:3000
+
+
+
+
 

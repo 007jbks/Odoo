@@ -1,11 +1,11 @@
 from fastapi import FastAPI, HTTPException, Header
-from models import UserCreate,UserLogin,ItemCreate
+from models import UserCreate,UserLogin,ItemCreate,ItemUpdate
 from mongo import db
 import bcrypt
 import secrets
 from cloud import cloudinary
 import cloudinary.uploader
-
+from bson import ObjectId
 app = FastAPI()
 users_collection = db["users"]
 items = db["items"]
@@ -82,13 +82,29 @@ def add_item(item: ItemCreate, token: str = Header(...)):
     user = get_current_user(token)
     uploader_id = str(user["_id"])
 
+    # Check listing limit for free users
+    if not user.get("premium_status", False) and user.get("listing_number", 0) >= 5:
+        raise HTTPException(
+            status_code=403,
+            detail="Free-tier users can only list up to 5 items. Upgrade to premium to list more."
+        )
+
+    # Convert item to dict and attach uploader_id
     item_dict = item.dict()
     item_dict["uploader_id"] = uploader_id
 
+    # Set default status
     if not item_dict.get("status"):
         item_dict["status"] = "Available"
 
+    # Insert item into DB
     result = items.insert_one(item_dict)
+
+    # Increment user's listing_number
+    db["users"].update_one(
+        {"_id": user["_id"]},
+        {"$inc": {"listing_number": 1}}
+    )
 
     return {
         "message": "Item uploaded successfully",
@@ -103,3 +119,64 @@ def get_current_user(token: str = Header(...)):
         raise HTTPException(status_code=401, detail="Invalid token")
     user["_id"] = str(user["_id"])  # Ensure ObjectId is stringified
     return user
+
+
+from fastapi import File, UploadFile
+
+@app.post("/upload_image")
+def upload_image(image: UploadFile = File(...)):
+    # Upload to Cloudinary
+    result = cloudinary.uploader.upload(image.file)
+    
+    # Get the secure URL
+    image_url = result.get("secure_url")
+
+    return {"image_url": image_url}
+
+@app.get("/items/my")
+def get_my_items(token: str = Header(...)):
+    user = get_current_user(token)
+    user_id = str(user["_id"])
+
+    my_items = list(items.find({"uploader_id": user_id}))
+    
+    # Convert ObjectId to string
+    for item in my_items:
+        item["_id"] = str(item["_id"])
+
+    return {
+        "count": len(my_items),
+        "items": my_items
+    }
+
+@app.put("/items/edit/{item_id}")
+def edit_item(item_id: str, updates: ItemUpdate, token: str = Header(...)):
+    user = get_current_user(token)
+    user_id = str(user["_id"])
+
+    # Validate item ID
+    try:
+        oid = ObjectId(item_id)
+    except:
+        raise HTTPException(status_code=400, detail="Invalid item ID format")
+
+    # Check if item exists and belongs to the user
+    item = items.find_one({"_id": oid})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    if item["uploader_id"] != user_id:
+        raise HTTPException(status_code=403, detail="You are not allowed to edit this item")
+
+    # Prepare update fields
+    update_fields = {k: v for k, v in updates.dict().items() if v is not None}
+    if not update_fields:
+        raise HTTPException(status_code=400, detail="No fields provided to update")
+
+    # Perform update
+    result = items.update_one({"_id": oid}, {"$set": update_fields})
+
+    return {
+        "message": "Item updated successfully",
+        "modified_count": result.modified_count
+    }

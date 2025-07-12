@@ -249,3 +249,34 @@ ecommerceWallet.transferOwnership(0xNewOwner);
 - Only callable by the current owner.
 
 
+---
+
+## 🌐 Environment Configuration
+
+Create a .env file in your root directory with the following values:
+
+```dotenv
+# Alchemy Sepolia RPC URL
+SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/your-alchemy-api-key
+
+# Private key of the signer wallet
+PRIVATE_KEY=your-wallet-private-key
+
+# Deployed contract address
+CONTRACT_ADDRESS=0x7d1aA1C96b9c4FD03a35aE45BfB91655e769F713
+
+# Port for the Express server
+PORT=3000
+```
+
+## Express API Routes 
+| Method | Route                     | Description                   |
+| ------ | ------------------------- | ----------------------------- |
+| POST   | /wallet/create            | Create a wallet for a user ID |
+| GET    | /wallet/balance/\:address | Get balance by address        |
+| GET    | /wallet/user/\:userId     | Get balance by user ID        |
+| POST   | /wallet/add               | Add tokens to a wallet        |
+| POST   | /wallet/subtract          | Subtract tokens from a wallet |
+| GET    | /wallet/exists/\:address  | Check if wallet is registered |
+
+

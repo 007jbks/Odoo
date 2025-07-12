@@ -7,7 +7,7 @@ class UserCreate(BaseModel):
     password: str
 
     # Optional extended fields
-    points: int = 0
+    points: int = 100
     reputation: float = 0.0
     sell_history: List[str] = []  # list of item IDs sold
     buy_history: List[str] = []   # list of item IDs bought

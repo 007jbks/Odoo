@@ -186,3 +186,79 @@ def edit_item(item_id: str, updates: ItemUpdate, token: str = Header(...)):
         "message": "Item updated successfully",
         "modified_count": result.modified_count
     }
+
+@app.get("/dashboard")
+def dashboard(token: str = Header(...)):
+    user = get_current_user(token)
+
+    # Format the response - convert ObjectIds in histories to strings if needed
+    # Assuming sell_history and buy_history are lists of item IDs (strings or ObjectIds)
+    sell_history = [str(item_id) for item_id in user.get("sell_history", [])]
+    buy_history = [str(item_id) for item_id in user.get("buy_history", [])]
+
+    return {
+        "username": user.get("username"),
+        "email": user.get("email"),
+        "points": user.get("points", 0),
+        "reputation": user.get("reputation", 0.0),
+        "sell_history": sell_history,
+        "buy_history": buy_history,
+        "address": user.get("address"),
+        "premium_status": user.get("premium_status", False),
+        "listing_number": user.get("listing_number", 0)
+    }
+
+@app.post("/buy_item/{item_id}")
+def buy_item(item_id: str, token: str = Header(...)):
+    user = get_current_user(token)
+    user_id = ObjectId(user["_id"])
+
+    try:
+        oid = ObjectId(item_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid item ID")
+
+    # Find the item and ensure it's available
+    item = items.find_one({"_id": oid, "status": "Available"})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not available")
+
+    price = item.get("price", 0)
+    if user.get("points", 0) < price:
+        raise HTTPException(status_code=403, detail="Insufficient points")
+
+    seller_id = ObjectId(item["uploader_id"])
+    if seller_id == user_id:
+        raise HTTPException(status_code=400, detail="Cannot buy your own item")
+
+    # Deduct points from buyer atomically and check if deduction succeeded
+    buyer_update = users_collection.update_one(
+        {"_id": user_id, "points": {"$gte": price}},
+        {"$inc": {"points": -price}}
+    )
+    if buyer_update.modified_count == 0:
+        raise HTTPException(status_code=403, detail="Insufficient points")
+
+    # Add points to seller
+    users_collection.update_one(
+        {"_id": seller_id},
+        {"$inc": {"points": price}}
+    )
+
+    # Transfer ownership and mark as sold
+    items_collection.update_one(
+        {"_id": oid},
+        {"$set": {"uploader_id": str(user_id), "status": "Sold"}}
+    )
+
+    # Update user histories
+    users_collection.update_one(
+        {"_id": user_id},
+        {"$push": {"buy_history": item_id}}
+    )
+    users_collection.update_one(
+        {"_id": seller_id},
+        {"$push": {"sell_history": item_id}}
+    )
+
+    return {"message": "Item purchased successfully"}

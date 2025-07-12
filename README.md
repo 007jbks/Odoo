@@ -50,9 +50,6 @@ ReWear is a web-based platform that empowers users to exchange their unused clot
 
 ### 💳 Wallet Microservice
 - **Node.js** with **Express**
-- Payment integration for **point top-up**
-- Secure token-based communication with FastAPI backend
-- Hashed wallet addresses with decentralized technology
 
 ---
 
@@ -131,7 +128,7 @@ cd frontend
 npm install
 ### ▶️ Run the Frontend Development Server
 npm start
-App will be running at: http://localhost:3000
+App will be running at: http://localhost:5173
 
 
 

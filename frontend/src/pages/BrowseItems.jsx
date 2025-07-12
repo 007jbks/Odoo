@@ -1,5 +1,7 @@
+import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 
 const BrowseItems = () => {
   const navigate = useNavigate();
@@ -187,6 +189,16 @@ const BrowseItems = () => {
       }
     },
   ]);
+
+  const data = axios.get('https://api.example.com/items')
+    .then(response => {
+      setAllItems(response.data);
+    })
+    .catch(error => {
+      console.error('Error fetching items:', error);
+    });
+
+    
   
   // States for search and filters
   const [searchTerm, setSearchTerm] = useState('');

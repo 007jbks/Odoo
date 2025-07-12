@@ -204,6 +204,9 @@ const Navbar = () => {
           <Link to="/add-item" className="text-gray-700 hover:text-[#1F77B4F2] transition-colors">
             List an Item
           </Link>
+          <Link to="/notifications" className="text-gray-700 hover:text-[#1F77B4F2] transition-colors">
+            Notifications
+          </Link>
         </div>
 
         {/* Notifications and User Account Section - Desktop */}

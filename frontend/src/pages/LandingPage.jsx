@@ -74,11 +74,12 @@ const LandingPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-5xl md:text-6xl font-bold leading-tight mb-6">
+            <h1 className="text-5xl md:text-6xl font-bold leading-tight mb-6 ">
               ReWear
               <span className="block text-2xl md:text-3xl mt-2 text-[#1F77B4F2]">Community Clothing Exchange</span>
             </h1>
-            <p className="text-xl md:text-2xl mb-8 max-w-2xl">
+            <p className="text-xl md:text-2xl mb-8 max-w-2xl text-white">
+              Join our community to swap, share, and give a second life to your clothes.
               Promote sustainable fashion and reduce textile waste by exchanging your unused garments 
               with others in your community.
             </p>
@@ -170,7 +171,7 @@ const LandingPage = () => {
           <div className="text-center mt-8">
             <button
               className="px-6 py-3 bg-[#1F77B4F2] text-white rounded-full font-semibold shadow hover:bg-[#1F77B4] transition-colors"
-              onClick={() => navigate("/auth")}
+              onClick={() => navigate("/browse")}
             >
               View All Items
             </button>

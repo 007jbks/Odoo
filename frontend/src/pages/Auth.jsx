@@ -192,7 +192,7 @@ const SignUpForm = ({ onToggle }) => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          userName: formData.email, // Assuming username is same as email
+          userName: "User", // Assuming username is same as email
           email: formData.email,
           password: formData.password,
         })
@@ -326,10 +326,10 @@ const DashboardPreview = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="z-10 absolute top-[40px] w-[350px] right-[20px]"
+          className="z-10 absolute top-[40px] w-[150px] right-[150px]"
         >
           <img
-            src="/images/img3.png"
+            src="/images/img3.jpg"
             alt="Dashboard Preview 1"
             className="w-full rounded-lg"
           />
@@ -338,10 +338,10 @@ const DashboardPreview = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="z-10 absolute top-[180px] w-[350px] right-[80px]"
+          className="z-10 absolute top-[180px] w-[150px] right-[230px]"
         >
           <img
-            src="/images/img1.png"
+            src="/images/img1.jpg"
             alt="Dashboard Preview 2"
             className="w-full rounded-lg"
           />
@@ -350,10 +350,10 @@ const DashboardPreview = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="z-10 absolute top-[320px] w-[350px] right-[140px]"
+          className="z-10 absolute top-[320px] w-[150px] right-[350px]"
         >
           <img
-            src="/images/img3.png"
+            src="/images/img2.jpg"
             alt="Dashboard Preview 3"
             className="w-full rounded-lg"
           />
@@ -397,13 +397,13 @@ const AuthPage = () => {
                 clipRule="evenodd"
                 />
             </svg>
-            Back to Dashboard
+            Back to Home
             </Link>
             </div>
 
           <div className="flex items-center mb-8">
             <div className="text-2xl font-bold text-[#1F77B4F2]">€</div>
-            <div className="ml-2 text-lg text-gray-900">COMPANY NAME</div>
+            <div className="ml-2 text-lg text-gray-900">ReWear</div>
           </div>
           
           <div className="relative">

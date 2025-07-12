@@ -82,33 +82,39 @@ def add_item(item: ItemCreate, token: str = Header(...)):
     user = get_current_user(token)
     uploader_id = str(user["_id"])
 
-    # Check listing limit for free users
-    if not user.get("premium_status", False) and user.get("listing_number", 0) >= 5:
-        raise HTTPException(
-            status_code=403,
-            detail="Free-tier users can only list up to 5 items. Upgrade to premium to list more."
+    # If user is not premium, check and deduct points
+    if not user.get("premium_status", False):
+        if user.get("points", 0) < 20:
+            raise HTTPException(
+                status_code=403,
+                detail="Insufficient points to list new item. Please buy more points."
+            )
+        # Deduct 20 points for the new listing
+        db["users"].update_one(
+            {"_id": user["_id"]},
+            {"$inc": {"points": -20}}
         )
 
     # Convert item to dict and attach uploader_id
     item_dict = item.dict()
     item_dict["uploader_id"] = uploader_id
 
-    # Set default status
+    # Set default status if not provided
     if not item_dict.get("status"):
         item_dict["status"] = "Available"
 
     # Insert item into DB
     result = items.insert_one(item_dict)
 
-    # Increment user's listing_number
-    db["users"].update_one(
-        {"_id": user["_id"]},
-        {"$inc": {"listing_number": 1}}
-    )
+    # Optionally return updated points balance for non-premium users
+    remaining_points = user.get("points", 0)
+    if not user.get("premium_status", False):
+        remaining_points -= 20
 
     return {
         "message": "Item uploaded successfully",
-        "item_id": str(result.inserted_id)
+        "item_id": str(result.inserted_id),
+        "remaining_points": remaining_points if not user.get("premium_status", False) else "Unlimited (Premium user)"
     }
 
 

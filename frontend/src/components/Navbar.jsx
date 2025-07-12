@@ -15,7 +15,9 @@ const Navbar = () => {
     email: 'alex@example.com',
     avatar: 'https://i.pravatar.cc/150?img=11',
     role: 'Premium User',
-    points: 450
+    points: 450,
+    isPremium: false,
+    listingsRemaining: 5
   });
   
   // Mock notifications for swap requests
@@ -206,6 +208,22 @@ const Navbar = () => {
 
         {/* Notifications and User Account Section - Desktop */}
         <div className="hidden md:flex items-center space-x-4">
+          {/* Premium Status Badge */}
+          {user.isPremium ? (
+            <div className="bg-yellow-400 text-gray-900 px-3 py-1 rounded-full text-xs font-medium">
+              Premium User
+            </div>
+          ) : (
+            <div className="flex items-center">
+              <div className="text-gray-600 text-xs mr-2">
+                {user.listingsRemaining}/5 listings
+              </div>
+              <Link to="/user-dashboard" className="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs font-medium hover:bg-yellow-600 transition-colors">
+                Upgrade
+              </Link>
+            </div>
+          )}
+          
           {/* Points Display */}
           <div className="bg-blue-50 text-[#1F77B4F2] px-3 py-1 rounded-full text-sm font-medium">
             {user.points} points

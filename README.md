@@ -102,8 +102,8 @@ This section explains how to set up the ReWear platform locally for development 
 
 ### 1️⃣ Clone the Repository
 
-git clone https://github.com/your-username/rewear.git
-cd rewear 
+git clone https://www.github.com/007jbks/Odoo
+cd Odoo
 
 ### 2️⃣ Backend Setup (FastAPI)
 📦 Install Dependencies
@@ -112,11 +112,14 @@ cd backend
 pip install -r requirements.txt
 ### 📁 Create .env file
 Create a .env file in the backend/ directory with the following content:
-
-EMAIL_PASS=your_gmail_app_password
-ADMIN_USERNAME=your_admin_username
-ADMIN_PASSWORD=your_admin_password
-ADMIN_TOKEN=your_secret_admin_token
+MONGO_URI
+MONGO_DB_NAME
+CLOUDINARY_KEY 
+CLOUDINARY_SECRET
+EMAIL_PASS
+ADMIN_USERNAME
+ADMIN_PASSWORD
+ADMIN_TOKEN
 ### ▶️ Run the Backend Server
 
 uvicorn main:app --reload
@@ -130,7 +133,26 @@ npm install
 npm start
 App will be running at: http://localhost:5173
 
+## The Smart Contract
+This smart contract is designed for centralized platforms where a backend service controls user balances.
 
+All balance changes (additions and subtractions) are transparent and recorded on-chain via events.
+
+Wallet addresses are deterministically generated per userId to maintain uniqueness and predictability.
+
+No ERC-20 or token transfer logic is included — this is a ledger-style accounting system only.
+
+Ideal for use cases such as:
+
+Reward points or loyalty systems
+
+Internal e-commerce credits
+
+Non-transferable digital tokens
+
+Compatible with backend event listeners to sync blockchain state with off-chain databases.
+
+Ownership control ensures that only the platform administrator (owner) can modify balances or register wallets.
 
 
 

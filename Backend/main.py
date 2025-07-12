@@ -17,6 +17,10 @@ email_pass = os.getenv("EMAIL_PASS")
 @app.get("/hello")
 def hello():
 	return {"message":"Hello world"}
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
 
 def send_email(to_email: str, subject: str, body: str):
     msg = MIMEMultipart()
@@ -227,13 +231,6 @@ def dashboard(token: str = Header(...)):
         "listing_number": user.get("listing_number", 0)
     }
 
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 
 from datetime import datetime
 

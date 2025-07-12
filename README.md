@@ -1,111 +1,116 @@
 # 🧥 ReWear – Community Clothing Exchange
 
-## 🔍 Overview
-
-**ReWear** is a web-based platform that promotes sustainable fashion by allowing users to **exchange unused clothing** through **direct swaps** or a **point-based redemption system**. Our aim is to reduce textile waste and encourage conscious consumption by reusing wearable garments rather than discarding them.
+### ♻️ Overview
+ReWear is a web-based platform that empowers users to exchange their unused clothing through either **direct swaps** or a **point-based system**. The initiative promotes **sustainable fashion** and aims to reduce textile waste by encouraging users to reuse wearable garments instead of discarding them.
 
 ---
 
-## 👥 Team: AlgoRhythm
+### 👥 Team: AlgoRhythm
 
-- **Team Leader**: kartik.orion.dev@gmail.com  
+- **Leader:** kartik.orion.dev@gmail.com  
 - samairawahiwork@gmail.com  
 - workwithdeepnav@gmail.com  
-- poddarayush52@gmail.com  
-
----
-
-## ⚙️ Tech Stack
-
-### 🔧 Backend (FastAPI)
-- Python 3.11 with FastAPI
-- MongoDB (with PyMongo)
-- Cloudinary (image hosting)
-- Bcrypt (password hashing)
-- SMTP (email notifications)
-- JWT-like token-based session management
-
-### 💻 Frontend (React)
-- ReactJS
-- TailwindCSS for styling
-- React Router for navigation
-- Axios for API communication
-
-### 💰 Wallet System (Node.js Microservice)
-- Node.js with Express
-- MongoDB
-- Manages point transactions for:
-  - Buying items
-  - Deducting listing fees
-  - Handling swap point differences
+- poddarayush52@gmail.com
 
 ---
 
 ## 🚀 Features
 
-### 🧑‍💼 User Management
-- User **signup** with email/username & secure password
-- **Login** using username or email
-- Token-based session system
-- Point-based system for item listings and purchases
-- Premium status support with unlimited listings
+- 🧾 **User Signup/Login** with token-based authentication
+- 🧥 **List Items** with images, size, category, and condition
+- 🔁 **Swap Requests**: Send/receive swap offers with other users
+- 💰 **Purchase Items** using platform points
+- 🧑‍⚖️ **Admin Approval System**: All listings go through an approval workflow
+- 🔔 **Notifications System**: For swap/purchase requests
+- 📬 **Email Alerts**: For purchases, swaps, admin decisions
+- 🔎 **Browse & Filter** items by category
+- 📦 **My Listings** dashboard for managing personal uploads
+- 📈 **User Dashboard** showing reputation, point balance, history
+- 🪪 **Premium Users** can list items without point deduction
+- 💳 **Top-Up Points** using real money via payment gateway (Node.js wallet)
 
 ---
 
-### 📦 Item Listing & Management
-- Upload clothing items with images, condition, category, etc.
-- Cloudinary image uploads via `/upload_image`
-- Edit and view user-specific listed items (`/items/my`)
-- Automatic status management: `Available`, `Sold`, `Swapped`
+## 🧠 Tech Stack
+
+### 💻 Frontend
+- **React.js**
+- **Tailwind CSS**
+- **React Router**
+- **Axios**
+- **Cloudinary** (for image uploads)
+
+### 🛠️ Backend (API)
+- **FastAPI** (Python)
+- **MongoDB** (with PyMongo)
+- **Cloudinary** (image uploads)
+- **SMTP Email** (via Gmail SMTP)
+- **bcrypt** (for password hashing)
+- **dotenv** (for secrets & environment config)
+
+### 💳 Wallet Microservice
+- **Node.js** with **Express**
+- Payment integration for **point top-up**
+- Secure token-based communication with FastAPI backend
+- Hashed wallet addresses with decentralized technology
 
 ---
 
-### 🛒 Marketplace Logic
-- Users can **buy items** with points  
-- Buyers can also **request swaps** with their own listed items  
-- Secure transaction system with admin & seller approvals
+## 💳 Points System
+
+- 🔰 Users begin with **100 points**
+- 🧾 Listing an item costs **20 points** (free for premium users)
+- 🛒 Items can be bought using points (based on `original_price`)
+- 🔁 Swap requests can be made; if value differs, **point difference must be paid**
+- ✅ **Users can top up points using real money** via integrated payment service
 
 ---
 
-### 🔔 Notifications System
-- Sellers receive **purchase or swap requests**
-- Sellers can **approve or disapprove** via dashboard
-- Real-time request handling via `/notifications/purchase_requests`
-- Email alerts for every action
+## 🔐 Admin Panel Features
+
+- Admin login with secure token
+- View all users & listings
+- Approve/disapprove items with reasons
+- Trigger email notifications for approvals
 
 ---
 
-### 🛠 Admin Panel
-- Admin login with credentials from `.env`
-- Admin can:
-  - View all users and items
-  - **Approve or disapprove listings**
-  - Email notification to users for listing decisions
+## 📦 API Highlights
+
+- `POST /signup`, `POST /login`
+- `POST /add_item`, `PUT /items/edit/{id}`
+- `GET /items`, `GET /items/my`
+- `POST /buy_item/{id}`
+- `POST /swap_item/{id}`
+- `GET /notifications/purchase_requests`
+- `POST /notifications/purchase_requests/{id}/respond`
+- `POST /admin/item/{id}/review`
 
 ---
 
-### 📊 User Dashboard
-- See your current:
-  - Points
-  - Premium status
-  - Reputation
-  - Address
-  - Buy/sell history
+## 📬 Email Integration
 
----
-
-### 📤 Email Notifications
-- SMTP-based notifications for:
+- Users receive email alerts on:
   - Purchase requests
-  - Swap requests
-  - Admin approvals or disapprovals
+  - Swap offers
+  - Admin approval or disapproval of listings
 
 ---
 
-## 🛡️ Security
-- Passwords hashed with **bcrypt**
-- Secure tokens for session management
-- Admin actions restricted via token-based validation
+## 📂 Folder Structure
+/backend
+└── main.py (FastAPI)
+└── models.py
+└── mongo.py
+└── cloud.py
+└── .env
 
----
+/frontend
+└── src/
+└── components/
+└── pages/
+└── App.jsx
+└── index.js
 
+/wallet-service
+└── server.js (Node.js Express) 

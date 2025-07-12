@@ -102,6 +102,12 @@ const LandingPage = () => {
               >
                 List an Item
               </button>
+              <button
+                className="px-6 py-3 bg-transparent text-white border-2 border-white rounded-full font-semibold hover:bg-white hover:text-[#1F77B4F2] transition-colors text-lg"
+                onClick={() => navigate("/admin-dashboard")}
+              >
+                Admin Dashboard
+              </button>
             </div>
           </motion.div>
         </div>

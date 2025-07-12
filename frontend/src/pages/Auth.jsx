@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
+const BaseUrl = "http://localhost:8000";
 
 const LoginForm = ({ onToggle }) => {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ const LoginForm = ({ onToggle }) => {
 
     try {
       // Make API call to backend for login
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch(`${BaseUrl}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -35,7 +36,6 @@ const LoginForm = ({ onToggle }) => {
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
-          isAdmin: formData.isAdmin
         })
       });
 
@@ -43,7 +43,7 @@ const LoginForm = ({ onToggle }) => {
 
       if (response.ok) {
         // You might want to store a token or user info here
-        // localStorage.setItem('token', data.token);
+        localStorage.setItem('token', data.token);
 
         // Navigate to admin dashboard if admin login
         if (formData.isAdmin) {
@@ -181,20 +181,20 @@ const SignUpForm = ({ onToggle }) => {
       setError('Password must be at least 6 characters long');
       return;
     }
-    
-    setLoading(true);
+      
+      setLoading(true);
     
     try {
       // API call to backend signup endpoint
-      const response = await fetch('/api/signup', {
+      const response = await fetch(`${BaseUrl}/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+          userName: formData.email, // Assuming username is same as email
           email: formData.email,
           password: formData.password,
-          isAdmin: formData.isAdmin
         })
       });
 

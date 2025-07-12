@@ -168,15 +168,15 @@ def get_my_items(token: str = Header(...)):
     user_id = str(user["_id"])
 
     my_items = list(items.find({"uploader_id": user_id}))
-    
-    # Convert ObjectId to string
-    for item in my_items:
-        item["_id"] = str(item["_id"])
+
+    # Clean all ObjectIds
+    my_items = [clean_object_ids(item) for item in my_items]
 
     return {
         "count": len(my_items),
         "items": my_items
     }
+
 
 @app.put("/items/edit/{item_id}")
 def edit_item(item_id: str, updates: ItemUpdate, token: str = Header(...)):
@@ -251,7 +251,7 @@ def buy_item(item_id: str, token: str = Header(...)):
     if not item:
         raise HTTPException(404, "Item not available")
 
-    price = item["price"]
+    price = item["original_price"]
     if user["points"] < price:
         raise HTTPException(403, "Insufficient points")
 
@@ -358,16 +358,35 @@ def respond_purchase_request(notification_id: str, approve: bool, token: str = H
             )
 
             message = "Swap approved and completed."
+            notifications_collection.update_one({"_id": oid}, {"$set": {"status": "approved", "read": True}})
+            return {"message": message}
         else:
-            # existing purchase logic...
+                # Deduct points from buyer
+            users_collection.update_one(
+            {"_id": buyer["_id"]},
+            {"$inc": {"points": -item["original_price"]}, "$push": {"buy_history": str(item["_id"])}}
+        )
+
+        # Add points to seller
+            users_collection.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$inc": {"points": item["original_price"]}, "$push": {"sell_history": str(item["_id"])}}
+        )
+
+        # Mark item as sold
+            items.update_one(
+            {"_id": item["_id"]},
+            {"$set": {"status": "Sold", "buyer_id": buyer["_id"]}}
+        )
+
             message = "Purchase request approved and completed."
 
-        notifications_collection.update_one({"_id": oid}, {"$set": {"status": "approved", "read": True}})
-        return {"message": message}
+            notifications_collection.update_one({"_id": oid}, {"$set": {"status": "approved", "read": True}})
+            return {"message": message}
 
     else:
-        notifications_collection.update_one({"_id": oid}, {"$set": {"status": "disapproved", "read": True}})
-        return {"message": "Request disapproved."}
+            notifications_collection.update_one({"_id": oid}, {"$set": {"status": "disapproved", "read": True}})
+            return {"message": "Request disapproved."}
 
 @app.post("/swap_item/{item_id}")
 def swap_item(item_id: str, offered_item_id: str, token: str = Header(...)):
@@ -393,7 +412,7 @@ def swap_item(item_id: str, offered_item_id: str, token: str = Header(...)):
         raise HTTPException(400, "Cannot swap with your own item")
 
     # Calculate point difference
-    price_diff = target_item["price"] - offered_item["price"]
+    price_diff = target_item["original_price"] - offered_item["original_price"]
     if price_diff > 0 and user["points"] < price_diff:
         raise HTTPException(403, "Insufficient points to complete the swap")
 
@@ -432,3 +451,13 @@ def swap_item(item_id: str, offered_item_id: str, token: str = Header(...)):
         send_email(seller["email"], subject, body)
 
     return {"message": "Swap request sent. Awaiting seller's response."}
+
+def clean_object_ids(doc):
+    for key, value in doc.items():
+        if isinstance(value, ObjectId):
+            doc[key] = str(value)
+        elif isinstance(value, list):
+            doc[key] = [str(v) if isinstance(v, ObjectId) else v for v in value]
+        elif isinstance(value, dict):
+            doc[key] = clean_object_ids(value)
+    return doc

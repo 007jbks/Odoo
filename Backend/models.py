@@ -33,3 +33,15 @@ class ItemCreate(BaseModel):
     image3url: Optional[str] = None
     image4url: Optional[str] = None
     
+class ItemUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    condition: Optional[str] = None
+    category: Optional[str] = None
+    price: Optional[int] = None
+    status: Optional[str] = None
+    date: Optional[str] = None
+    image1url: Optional[str] = None
+    image2url: Optional[str] = None
+    image3url: Optional[str] = None
+    image4url: Optional[str] = None

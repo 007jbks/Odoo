@@ -97,20 +97,4 @@ ReWear is a web-based platform that empowers users to exchange their unused clot
 
 ---
 
-## 📂 Folder Structure
-/backend
-└── main.py (FastAPI)
-└── models.py
-└── mongo.py
-└── cloud.py
-└── .env
 
-/frontend
-└── src/
-└── components/
-└── pages/
-└── App.jsx
-└── index.js
-
-/wallet-service
-└── server.js (Node.js Express) 

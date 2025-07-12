@@ -35,6 +35,7 @@ class ItemCreate(BaseModel):
     image2url: Optional[str] = None
     image3url: Optional[str] = None
     image4url: Optional[str] = None
+    admin_status :str = "Pending"
     
 class ItemUpdate(BaseModel):
     name: Optional[str] = None

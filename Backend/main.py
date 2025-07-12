@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Header
+from fastapi import FastAPI, HTTPException, Header, Query
 from models import UserCreate,UserLogin,ItemCreate,ItemUpdate
 from mongo import db
 import bcrypt
@@ -461,3 +461,98 @@ def clean_object_ids(doc):
         elif isinstance(value, dict):
             doc[key] = clean_object_ids(value)
     return doc
+
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+admin_token = os.getenv("ADMIN_TOKEN")
+
+@app.post("/admin/login")
+def admin_login(username: str, password: str):
+    global admin_token
+    if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+        # Generate a fresh token on every login
+        admin_token = secrets.token_hex(32)
+        return {"message": "Admin login successful", "token": admin_token}
+    raise HTTPException(status_code=401, detail="Invalid admin credentials")
+
+def verify_admin(token: str = Header(...)):
+    if token != admin_token:
+        raise HTTPException(status_code=403, detail="Unauthorized: Invalid admin token")
+    return True
+
+@app.get("/admin/users")
+def get_all_users(token: str = Header(...)):
+    verify_admin(token)  # Validate token
+    
+    users = list(users_collection.find())
+
+    # Clean up ObjectIds and passwords before sending
+    cleaned_users = []
+    for user in users:
+        user["_id"] = str(user["_id"])
+        user.pop("password", None)  # Never expose password hash
+        cleaned_users.append(user)
+
+    return {
+        "count": len(cleaned_users),
+        "users": cleaned_users
+    }
+@app.get("/admin/items")
+def get_all_items(token: str = Header(...)):
+    verify_admin(token)  # Validate admin token
+
+    all_items = list(items.find())
+
+    # Clean up ObjectIds for JSON compatibility
+    cleaned_items = []
+    for item in all_items:
+        item["_id"] = str(item["_id"])
+        item["uploader_id"] = str(item["uploader_id"])
+        if "buyer_id" in item:
+            item["buyer_id"] = str(item["buyer_id"])
+        cleaned_items.append(item)
+
+    return {
+        "count": len(cleaned_items),
+        "items": cleaned_items
+    }
+
+@app.post("/admin/item/{item_id}/review")
+def admin_review_item(
+    item_id: str,
+    approve: bool = Query(..., description="Set true to approve, false to disapprove"),
+    token: str = Header(...)
+):
+    verify_admin(token)
+
+    try:
+        oid = ObjectId(item_id)
+    except:
+        raise HTTPException(400, "Invalid item ID")
+
+    item = items.find_one({"_id": oid})
+    if not item:
+        raise HTTPException(404, "Item not found")
+
+    uploader_id = item.get("uploader_id")
+    user = users_collection.find_one({"_id": ObjectId(uploader_id)})
+
+    if not user:
+        raise HTTPException(404, "Uploader not found")
+
+    new_status = "approved" if approve else "disapproved"
+    items.update_one({"_id": oid}, {"$set": {"admin_status": new_status}})
+
+    # Send email notification
+    subject = f"Item {new_status.capitalize()}"
+    body = f"""
+    Hello {user['username']},
+
+    Your item listing titled "{item['name']}" has been {new_status} by the admin.
+
+    Regards,
+    Admin Team
+    """
+    send_email(user["email"], subject, body)
+
+    return {"message": f"Item {new_status} and email sent"}

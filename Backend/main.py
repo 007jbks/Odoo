@@ -9,6 +9,7 @@ from bson import ObjectId
 app = FastAPI()
 users_collection = db["users"]
 items = db["items"]
+notifications_collection = db["notifications"]
 import os
 from dotenv import load_dotenv
 email_pass = os.getenv("EMAIL_PASS")
@@ -214,66 +215,161 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+from datetime import datetime
+
+EMAIL_ADDRESS = "jon00doe00297@gmail.com"
+EMAIL_PASSWORD = os.getenv("EMAIL_PASS")
+
 @app.post("/buy_item/{item_id}")
 def buy_item(item_id: str, token: str = Header(...)):
     user = get_current_user(token)
-    user_id = ObjectId(user["_id"])
+    user_id = str(user["_id"])
 
     try:
         oid = ObjectId(item_id)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid item ID")
+    except:
+        raise HTTPException(400, "Invalid item ID")
 
-    # Find the item and ensure it's available
-    item = items_collection.find_one({"_id": oid, "status": "Available"})
+    item = items.find_one({"_id": oid, "status": "Available"})
     if not item:
-        raise HTTPException(status_code=404, detail="Item not available")
+        raise HTTPException(404, "Item not available")
 
-    price = item.get("price", 0)
-    if user.get("points", 0) < price:
-        raise HTTPException(status_code=403, detail="Insufficient points")
+    price = item["price"]
+    if user["points"] < price:
+        raise HTTPException(403, "Insufficient points")
 
-    seller_id = ObjectId(item["uploader_id"])
+    seller_id = item["uploader_id"]
     if seller_id == user_id:
-        raise HTTPException(status_code=400, detail="Cannot buy your own item")
+        raise HTTPException(400, "Cannot buy your own item")
 
-    seller = users_collection.find_one({"_id": seller_id})
-    if not seller or "email" not in seller:
-        raise HTTPException(status_code=404, detail="Seller not found or missing email")
+    # Create a purchase request notification for seller approval
+    notification_doc = {
+        "user_id": seller_id,
+        "item_id": item_id,
+        "buyer_id": user_id,
+        "message": f"{user['username']} wants to buy your item: {item['name']}",
+        "status": "pending",
+        "read": False,
+        "timestamp": datetime.utcnow()
+    }
+    notifications_collection.insert_one(notification_doc)
 
-    buyer_name = user.get("username", "A user")
-    seller_email = seller["email"]
-    item_name = item.get("name", "an item")
+    # Send email to the seller
+    seller = users_collection.find_one({"_id": ObjectId(seller_id)})
+    if seller and seller.get("email"):
+        subject = "New Purchase Request on Your Listing"
+        body = f"""
+        Hello {seller['username']},
 
-    # Compose email
-    sender_email = "jon00doe00297@gmail.com"
-    sender_password = email_pass  # Use environment variables for real apps!
+        {user['username']} is interested in buying your item "{item['name']}".
 
-    message = MIMEMultipart()
-    message["From"] = sender_email
-    message["To"] = seller_email
-    message["Subject"] = f"Interest in your listing: {item_name}"
+        Please log in to your dashboard to approve or decline this request.
 
-    body = f"""
-    Hello {seller.get('username', 'Seller')},
+        Thank you,
+        Your Marketplace Team
+        """
 
-    {buyer_name} is interested in buying your listing: "{item_name}" priced at {price} points.
+        msg = MIMEMultipart()
+        msg["From"] = EMAIL_ADDRESS
+        msg["To"] = seller["email"]
+        msg["Subject"] = subject
+        msg.attach(MIMEText(body, "plain"))
 
-    Please get in touch with the buyer to proceed with the transaction.
+        try:
+            with smtplib.SMTP("smtp.gmail.com", 587) as server:
+                server.starttls()
+                server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+                server.sendmail(EMAIL_ADDRESS, seller["email"], msg.as_string())
+        except Exception as e:
+            print("Email sending failed:", e)
 
-    Best regards,
-    Your Marketplace Team
-    """
+    return {"message": "Purchase request sent to seller. Awaiting approval."}
 
-    message.attach(MIMEText(body, "plain"))
+@app.get("/notifications/purchase_requests")
+def get_purchase_requests(token: str = Header(...)):
+    user = get_current_user(token)
+    user_id = str(user["_id"])
 
-    # Send email via SMTP
+    requests = list(notifications_collection.find({"user_id": user_id, "status": "pending"}))
+    for r in requests:
+        r["_id"] = str(r["_id"])
+        r["timestamp"] = r["timestamp"].isoformat()
+    return {"count": len(requests), "requests": requests}
+
+@app.post("/notifications/purchase_requests/{notification_id}/respond")
+def respond_purchase_request(notification_id: str, approve: bool, token: str = Header(...)):
+    user = get_current_user(token)
+    user_id = str(user["_id"])
+
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(sender_email, sender_password)
-            server.sendmail(sender_email, seller_email, message.as_string())
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
+        oid = ObjectId(notification_id)
+    except:
+        raise HTTPException(400, "Invalid notification ID")
 
-    return {"message": "Seller has been notified of your interest."}
+    notif = notifications_collection.find_one({"_id": oid})
+    if not notif:
+        raise HTTPException(404, "Notification not found")
+    if notif["user_id"] != user_id:
+        raise HTTPException(403, "Not authorized")
 
+    if notif["status"] != "pending":
+        raise HTTPException(400, "Request already processed")
+
+    # Get buyer and item
+    buyer = users_collection.find_one({"_id": ObjectId(notif["buyer_id"])})
+    item = items.find_one({"_id": ObjectId(notif["item_id"])})
+
+    if not buyer or not item:
+        raise HTTPException(404, "Buyer or item not found")
+
+    price = item["price"]
+
+    if approve:
+        # Check buyer points atomically and deduct
+        result = users_collection.update_one(
+            {"_id": buyer["_id"], "points": {"$gte": price}},
+            {"$inc": {"points": -price}}
+        )
+        if result.modified_count == 0:
+            raise HTTPException(403, "Buyer has insufficient points")
+
+        # Add points to seller
+        users_collection.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$inc": {"points": price}}
+        )
+
+        # Transfer item ownership and mark sold
+        items.update_one(
+            {"_id": ObjectId(notif["item_id"])},
+            {"$set": {"uploader_id": buyer["_id"].__str__(), "status": "Sold"}}
+        )
+
+        # Update histories
+        users_collection.update_one(
+            {"_id": buyer["_id"]},
+            {"$push": {"buy_history": notif["item_id"]}}
+        )
+        users_collection.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$push": {"sell_history": notif["item_id"]}}
+        )
+
+        # Update notification status
+        notifications_collection.update_one(
+            {"_id": oid},
+            {"$set": {"status": "approved", "read": True}}
+        )
+        return {"message": "Purchase request approved and processed."}
+
+    else:
+        # Disapprove the purchase request
+        notifications_collection.update_one(
+            {"_id": oid},
+            {"$set": {"status": "disapproved", "read": True}}
+        )
+        return {"message": "Purchase request disapproved."}

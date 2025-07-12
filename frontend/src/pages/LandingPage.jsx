@@ -114,12 +114,12 @@ const LandingPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="flex flex-col items-center text-center">
               <div className="bg-[#1F77B4F2] rounded-full w-16 h-16 flex items-center justify-center text-white text-2xl font-bold mb-4">1</div>
-              <h3 className="text-xl font-semibold mb-2">List Your Items</h3>
-              <p className="text-gray-600">Take photos and describe your unused clothing items that are still in good condition.</p>
+              <h3 className="text-xl font-semibold mb-2">Your Items & Get quality Check</h3>
+              <p className="text-gray-600"> Take photos and describe your unused clothing items that are still in good condition and and wait for the approval after proper quality check.</p>
             </div>
             <div className="flex flex-col items-center text-center">
               <div className="bg-[#1F77B4F2] rounded-full w-16 h-16 flex items-center justify-center text-white text-2xl font-bold mb-4">2</div>
-              <h3 className="text-xl font-semibold mb-2">Connect & Exchange</h3>
+              <h3 className="text-xl font-semibold mb-2">Upload Your Items</h3>
               <p className="text-gray-600">Find items you like and arrange direct swaps or use our point-based redemption system.</p>
             </div>
             <div className="flex flex-col items-center text-center">

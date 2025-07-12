@@ -77,26 +77,17 @@ def login(user: UserLogin):
         "user_id": str(db_user["_id"])
     }
 
-
-@app.get("/items")
-def get_all_items():
-    items_list = list(items.find())
-    
-    # Convert ObjectId to string
-    for item in items_list:
-        item["_id"] = str(item["_id"])
-    
-    return items_list
-
 @app.post("/add_item")
-def add_item(item: ItemCreate):
-    item_dict = item.dict()
+def add_item(item: ItemCreate, token: str = Header(...)):
+    user = get_current_user(token)
+    uploader_id = str(user["_id"])
 
-    # Set default status if not passed
+    item_dict = item.dict()
+    item_dict["uploader_id"] = uploader_id
+
     if not item_dict.get("status"):
         item_dict["status"] = "Available"
 
-    # Insert into MongoDB
     result = items.insert_one(item_dict)
 
     return {
@@ -104,9 +95,11 @@ def add_item(item: ItemCreate):
         "item_id": str(result.inserted_id)
     }
 
+
+# Helper to get current user from token
 def get_current_user(token: str = Header(...)):
     user = db["users"].find_one({"auth_token": token})
     if not user:
         raise HTTPException(status_code=401, detail="Invalid token")
-    user["_id"] = str(user["_id"])
+    user["_id"] = str(user["_id"])  # Ensure ObjectId is stringified
     return user

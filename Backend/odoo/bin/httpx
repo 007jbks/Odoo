@@ -1,4 +1,6 @@
-#!/mnt/data/Odoo/Backend/odoo/bin/python3
+#!/bin/sh
+'''exec' "/mnt/data/Odoo Hackathon/Odoo/Backend/odoo/bin/python3" "$0" "$@"
+' '''
 # -*- coding: utf-8 -*-
 import re
 import sys

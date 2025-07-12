@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV /mnt/data/Odoo/Backend/odoo
+set -gx VIRTUAL_ENV '/mnt/data/Odoo Hackathon/Odoo/Backend/odoo'
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/"bin $PATH

@@ -258,8 +258,8 @@ const BrowseItems = () => {
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Browse Items</h1>
         
         {/* Search and Sort Controls */}
-        <div className="flex flex-col md:flex-row justify-between mb-6">
-          <div className="relative mb-4 md:mb-0 w-full md:w-2/3">
+        <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
+          <div className="relative w-full md:w-2/3">
             <input
               type="text"
               placeholder="Search items by name, brand, or category"
@@ -272,11 +272,11 @@ const BrowseItems = () => {
             </svg>
           </div>
           
-          <div className="flex space-x-2">
+          <div className="flex gap-2 w-full md:w-auto">
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-white border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1F77B4F2]"
+              className="flex-1 md:flex-none bg-white border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1F77B4F2]"
             >
               <option value="newest">Newest First</option>
               <option value="points-low-high">Points: Low to High</option>
@@ -284,24 +284,43 @@ const BrowseItems = () => {
             </select>
             
             <button 
-              className="md:hidden bg-[#1F77B4F2] text-white px-4 py-2 rounded-lg"
+              className="md:hidden flex-1 bg-[#1F77B4F2] text-white px-4 py-2 rounded-lg"
               onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
             >
-              Filters
+              <div className="flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                <span>Filters</span>
+              </div>
             </button>
           </div>
         </div>
         
-        <div className="flex flex-col md:flex-row">
+        <div className="flex flex-col md:flex-row gap-6">
           {/* Filters - Desktop */}
-          <div className="hidden md:block w-64 mr-8">
-            <div className="bg-white p-4 rounded-lg shadow-sm">
-              <h2 className="font-medium text-lg mb-4">Filters</h2>
+          <div className="hidden md:block w-64 flex-shrink-0">
+            <div className="bg-white p-4 rounded-lg shadow-sm sticky top-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="font-medium text-lg">Filters</h2>
+                <button
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSelectedCategory('All');
+                    setSelectedGender('All');
+                    setSelectedCondition('All');
+                    setPointsRange([0, 100]);
+                  }}
+                  className="text-sm text-[#1F77B4F2] hover:underline"
+                >
+                  Clear All
+                </button>
+              </div>
               
               {/* Category filter */}
               <div className="mb-6">
                 <h3 className="font-medium text-sm mb-2">Category</h3>
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-48 overflow-y-auto">
                   {categories.map(category => (
                     <div key={category} className="flex items-center">
                       <input
@@ -378,7 +397,7 @@ const BrowseItems = () => {
                     max="100"
                     value={pointsRange[0]}
                     onChange={(e) => setPointsRange([parseInt(e.target.value), pointsRange[1]])}
-                    className="w-full"
+                    className="w-full accent-[#1F77B4F2]"
                   />
                   <input
                     type="range"
@@ -386,161 +405,151 @@ const BrowseItems = () => {
                     max="100"
                     value={pointsRange[1]}
                     onChange={(e) => setPointsRange([pointsRange[0], parseInt(e.target.value)])}
-                    className="w-full"
+                    className="w-full accent-[#1F77B4F2]"
                   />
                 </div>
               </div>
-              
-              <button
-                onClick={() => {
-                  setSearchTerm('');
-                  setSelectedCategory('All');
-                  setSelectedGender('All');
-                  setSelectedCondition('All');
-                  setPointsRange([0, 100]);
-                }}
-                className="w-full py-2 text-[#1F77B4F2] border border-[#1F77B4F2] rounded-lg text-sm hover:bg-blue-50 transition-colors"
-              >
-                Clear All Filters
-              </button>
             </div>
           </div>
           
           {/* Filters - Mobile */}
           {mobileFiltersOpen && (
-            <div className="md:hidden fixed inset-0 z-40 bg-gray-600 bg-opacity-75">
-              <div className="fixed right-0 top-0 bottom-0 w-full max-w-xs bg-white shadow-xl overflow-y-auto p-4">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="font-medium text-lg">Filters</h2>
-                  <button onClick={() => setMobileFiltersOpen(false)} className="text-gray-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-                
-                {/* Category filter */}
-                <div className="mb-6">
-                  <h3 className="font-medium text-sm mb-2">Category</h3>
-                  <div className="space-y-2">
-                    {categories.map(category => (
-                      <div key={category} className="flex items-center">
-                        <input
-                          type="radio"
-                          id={`mobile-category-${category}`}
-                          name="mobile-category"
-                          checked={selectedCategory === category}
-                          onChange={() => {
-                            setSelectedCategory(category);
-                            setMobileFiltersOpen(false);
-                          }}
-                          className="h-4 w-4 text-[#1F77B4F2] focus:ring-[#1F77B4F2]"
-                        />
-                        <label htmlFor={`mobile-category-${category}`} className="ml-2 text-sm text-gray-700">
-                          {category}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Gender filter */}
-                <div className="mb-6">
-                  <h3 className="font-medium text-sm mb-2">Gender</h3>
-                  <div className="space-y-2">
-                    {['All', 'Men', 'Women', 'Unisex'].map(gender => (
-                      <div key={gender} className="flex items-center">
-                        <input
-                          type="radio"
-                          id={`mobile-gender-${gender}`}
-                          name="mobile-gender"
-                          checked={selectedGender === gender}
-                          onChange={() => {
-                            setSelectedGender(gender);
-                            setMobileFiltersOpen(false);
-                          }}
-                          className="h-4 w-4 text-[#1F77B4F2] focus:ring-[#1F77B4F2]"
-                        />
-                        <label htmlFor={`mobile-gender-${gender}`} className="ml-2 text-sm text-gray-700">
-                          {gender}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Condition filter */}
-                <div className="mb-6">
-                  <h3 className="font-medium text-sm mb-2">Condition</h3>
-                  <div className="space-y-2">
-                    {['All', 'Like New', 'Excellent', 'Good', 'Fair'].map(condition => (
-                      <div key={condition} className="flex items-center">
-                        <input
-                          type="radio"
-                          id={`mobile-condition-${condition}`}
-                          name="mobile-condition"
-                          checked={selectedCondition === condition}
-                          onChange={() => {
-                            setSelectedCondition(condition);
-                            setMobileFiltersOpen(false);
-                          }}
-                          className="h-4 w-4 text-[#1F77B4F2] focus:ring-[#1F77B4F2]"
-                        />
-                        <label htmlFor={`mobile-condition-${condition}`} className="ml-2 text-sm text-gray-700">
-                          {condition}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Points range filter */}
-                <div className="mb-6">
-                  <h3 className="font-medium text-sm mb-2">Points Range</h3>
-                  <div className="px-2">
-                    <div className="flex justify-between mb-2">
-                      <span className="text-sm text-gray-600">{pointsRange[0]}</span>
-                      <span className="text-sm text-gray-600">{pointsRange[1]}</span>
+            <div className="fixed inset-0 z-50 overflow-hidden">
+              <div className="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setMobileFiltersOpen(false)} />
+              
+              <div className="fixed inset-y-0 right-0 flex max-w-full">
+                <div className="w-screen max-w-md transform transition ease-in-out duration-300">
+                  <div className="flex h-full flex-col bg-white shadow-xl">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                      <h2 className="text-lg font-medium text-gray-900">Filters</h2>
+                      <button
+                        type="button"
+                        className="text-gray-400 hover:text-gray-500"
+                        onClick={() => setMobileFiltersOpen(false)}
+                      >
+                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
                     </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={pointsRange[0]}
-                      onChange={(e) => setPointsRange([parseInt(e.target.value), pointsRange[1]])}
-                      className="w-full"
-                    />
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={pointsRange[1]}
-                      onChange={(e) => setPointsRange([pointsRange[0], parseInt(e.target.value)])}
-                      className="w-full"
-                    />
+                    
+                    <div className="flex-1 overflow-y-auto px-4 py-6">
+                      {/* Category filter */}
+                      <div className="mb-6">
+                        <h3 className="font-medium text-sm mb-2">Category</h3>
+                        <div className="space-y-2">
+                          {categories.map(category => (
+                            <div key={category} className="flex items-center">
+                              <input
+                                type="radio"
+                                id={`mobile-category-${category}`}
+                                name="mobile-category"
+                                checked={selectedCategory === category}
+                                onChange={() => setSelectedCategory(category)}
+                                className="h-4 w-4 text-[#1F77B4F2] focus:ring-[#1F77B4F2]"
+                              />
+                              <label htmlFor={`mobile-category-${category}`} className="ml-2 text-sm text-gray-700">
+                                {category}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Gender filter */}
+                      <div className="mb-6">
+                        <h3 className="font-medium text-sm mb-2">Gender</h3>
+                        <div className="space-y-2">
+                          {['All', 'Men', 'Women', 'Unisex'].map(gender => (
+                            <div key={gender} className="flex items-center">
+                              <input
+                                type="radio"
+                                id={`mobile-gender-${gender}`}
+                                name="mobile-gender"
+                                checked={selectedGender === gender}
+                                onChange={() => setSelectedGender(gender)}
+                                className="h-4 w-4 text-[#1F77B4F2] focus:ring-[#1F77B4F2]"
+                              />
+                              <label htmlFor={`mobile-gender-${gender}`} className="ml-2 text-sm text-gray-700">
+                                {gender}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Condition filter */}
+                      <div className="mb-6">
+                        <h3 className="font-medium text-sm mb-2">Condition</h3>
+                        <div className="space-y-2">
+                          {['All', 'Like New', 'Excellent', 'Good', 'Fair'].map(condition => (
+                            <div key={condition} className="flex items-center">
+                              <input
+                                type="radio"
+                                id={`mobile-condition-${condition}`}
+                                name="mobile-condition"
+                                checked={selectedCondition === condition}
+                                onChange={() => setSelectedCondition(condition)}
+                                className="h-4 w-4 text-[#1F77B4F2] focus:ring-[#1F77B4F2]"
+                              />
+                              <label htmlFor={`mobile-condition-${condition}`} className="ml-2 text-sm text-gray-700">
+                                {condition}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Points range filter */}
+                      <div className="mb-6">
+                        <h3 className="font-medium text-sm mb-2">Points Range</h3>
+                        <div className="px-2">
+                          <div className="flex justify-between mb-2">
+                            <span className="text-sm text-gray-600">{pointsRange[0]}</span>
+                            <span className="text-sm text-gray-600">{pointsRange[1]}</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={pointsRange[0]}
+                            onChange={(e) => setPointsRange([parseInt(e.target.value), pointsRange[1]])}
+                            className="w-full accent-[#1F77B4F2]"
+                          />
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={pointsRange[1]}
+                            onChange={(e) => setPointsRange([pointsRange[0], parseInt(e.target.value)])}
+                            className="w-full accent-[#1F77B4F2]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border-t border-gray-200 px-4 py-6">
+                      <button
+                        className="w-full bg-[#1F77B4F2] text-white py-2 rounded-lg"
+                        onClick={() => setMobileFiltersOpen(false)}
+                      >
+                        Apply Filters
+                      </button>
+                      <button
+                        className="w-full mt-2 border border-gray-300 text-gray-700 py-2 rounded-lg"
+                        onClick={() => {
+                          setSearchTerm('');
+                          setSelectedCategory('All');
+                          setSelectedGender('All');
+                          setSelectedCondition('All');
+                          setPointsRange([0, 100]);
+                          setMobileFiltersOpen(false);
+                        }}
+                      >
+                        Clear All Filters
+                      </button>
+                    </div>
                   </div>
-                </div>
-                
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => {
-                      setSearchTerm('');
-                      setSelectedCategory('All');
-                      setSelectedGender('All');
-                      setSelectedCondition('All');
-                      setPointsRange([0, 100]);
-                      setMobileFiltersOpen(false);
-                    }}
-                    className="flex-1 py-2 text-[#1F77B4F2] border border-[#1F77B4F2] rounded-lg text-sm hover:bg-blue-50 transition-colors"
-                  >
-                    Clear All
-                  </button>
-                  <button
-                    onClick={() => setMobileFiltersOpen(false)}
-                    className="flex-1 py-2 bg-[#1F77B4F2] text-white rounded-lg text-sm hover:bg-[#1F77B4] transition-colors"
-                  >
-                    Apply Filters
-                  </button>
                 </div>
               </div>
             </div>
@@ -561,29 +570,29 @@ const BrowseItems = () => {
             ) : (
               <div>
                 <p className="text-sm text-gray-500 mb-4">{filteredItems.length} items found</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredItems.map(item => (
                     <div key={item.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
-                      <div className="relative h-48 overflow-hidden">
+                      <div className="relative h-48 overflow-hidden group">
                         <img
                           src={item.image}
                           alt={item.name}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
                           onClick={() => navigate(`/item/${item.id}`)}
                         />
-                        <div className="absolute top-0 right-0 bg-[#1F77B4F2] text-white text-xs px-2 py-1">
+                        <div className="absolute top-0 right-0 bg-[#1F77B4F2] text-white px-2 py-1 text-sm font-medium">
                           {item.pointsValue} pts
                         </div>
                       </div>
                       <div className="p-4">
                         <h3 
-                          className="font-medium text-gray-900 hover:text-[#1F77B4F2] cursor-pointer"
+                          className="font-medium text-gray-900 hover:text-[#1F77B4F2] cursor-pointer truncate"
                           onClick={() => navigate(`/item/${item.id}`)}
                         >
                           {item.name}
                         </h3>
                         <div className="mt-1 flex justify-between items-center">
-                          <span className="text-sm text-gray-500">{item.brand}</span>
+                          <span className="text-sm text-gray-500 truncate">{item.brand}</span>
                           <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">{item.size}</span>
                         </div>
                         <div className="mt-2 flex justify-between">
@@ -592,7 +601,7 @@ const BrowseItems = () => {
                         </div>
                         <div className="mt-3 flex items-center text-sm">
                           <span className="text-gray-500">Listed by</span>
-                          <span className="ml-1 font-medium">{item.uploader.name}</span>
+                          <span className="ml-1 font-medium truncate">{item.uploader.name}</span>
                           <div className="ml-2 flex items-center text-yellow-400">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
                               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />

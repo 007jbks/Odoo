@@ -172,15 +172,15 @@ const ItemDetail = () => {
   const hasEnoughPoints = userPoints >= item.pointsValue;
   
   return (
-    <div className="min-h-screen bg-gray-50 py-6">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-6">
+      <div className="container mx-auto px-3 sm:px-6 lg:px-8">
         {/* Back button */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <button 
             onClick={() => navigate(-1)} 
-            className="flex items-center text-[#1F77B4F2] hover:text-[#1F77B4] transition-colors"
+            className="flex items-center text-[#1F77B4F2] hover:text-[#1F77B4] transition-colors text-sm sm:text-base"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
             </svg>
             Back to listings
@@ -191,14 +191,14 @@ const ItemDetail = () => {
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="flex flex-col lg:flex-row">
             {/* Left side - Image gallery */}
-            <div className="lg:w-1/2 p-4">
-              <div className="mb-4 relative">
+            <div className="lg:w-1/2 p-3 sm:p-4">
+              <div className="mb-3 sm:mb-4 relative">
                 <img 
                   src={item.images[selectedImage]} 
                   alt={item.name} 
-                  className="w-full h-[400px] object-cover object-center rounded-lg"
+                  className="w-full h-[250px] sm:h-[350px] lg:h-[400px] object-contain bg-gray-50 rounded-lg"
                 />
-                <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-medium ${
+                <div className={`absolute top-2 sm:top-3 right-2 sm:right-3 px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${
                   item.status === 'Available' 
                     ? 'bg-green-100 text-green-800' 
                     : item.status === 'Pending'
@@ -210,17 +210,19 @@ const ItemDetail = () => {
               </div>
               
               {/* Thumbnails */}
-              <div className="flex space-x-2 overflow-x-auto pb-2">
+              <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                 {item.images.map((image, index) => (
                   <div 
                     key={index}
-                    className={`cursor-pointer border-2 rounded ${selectedImage === index ? 'border-[#1F77B4F2]' : 'border-transparent'}`}
+                    className={`cursor-pointer border-2 rounded flex-shrink-0 transition-transform ${
+                      selectedImage === index ? 'border-[#1F77B4F2] scale-105' : 'border-transparent hover:scale-105'
+                    }`}
                     onClick={() => setSelectedImage(index)}
                   >
                     <img 
                       src={image} 
                       alt={`${item.name} thumbnail ${index + 1}`} 
-                      className="w-20 h-20 object-cover object-center rounded"
+                      className="w-16 h-16 sm:w-20 sm:h-20 object-cover object-center rounded"
                     />
                   </div>
                 ))}
@@ -228,63 +230,63 @@ const ItemDetail = () => {
             </div>
 
             {/* Right side - Item details */}
-            <div className="lg:w-1/2 p-4 lg:p-6 flex flex-col">
+            <div className="lg:w-1/2 p-3 sm:p-4 lg:p-6 flex flex-col">
               {/* Item info */}
-              <div className="mb-6">
+              <div className="mb-4 sm:mb-6">
                 <div className="flex justify-between items-start">
-                  <h1 className="text-2xl font-bold text-gray-900">{item.name}</h1>
-                  <div className="bg-[#1F77B4F2] text-white px-3 py-1 rounded-lg">
+                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{item.name}</h1>
+                  <div className="bg-[#1F77B4F2] text-white px-2 sm:px-3 py-1 rounded-lg text-sm sm:text-base">
                     {item.pointsValue} points
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-4">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-3 sm:mt-4">
                   <div>
-                    <span className="text-sm text-gray-500">Size:</span>
-                    <span className="ml-1 text-sm font-medium">{item.size}</span>
+                    <span className="text-xs sm:text-sm text-gray-500">Size:</span>
+                    <span className="ml-1 text-xs sm:text-sm font-medium">{item.size}</span>
                   </div>
                   <div>
-                    <span className="text-sm text-gray-500">Category:</span>
-                    <span className="ml-1 text-sm font-medium">{item.category}</span>
+                    <span className="text-xs sm:text-sm text-gray-500">Category:</span>
+                    <span className="ml-1 text-xs sm:text-sm font-medium">{item.category}</span>
                   </div>
                   <div>
-                    <span className="text-sm text-gray-500">Brand:</span>
-                    <span className="ml-1 text-sm font-medium">{item.brand}</span>
+                    <span className="text-xs sm:text-sm text-gray-500">Brand:</span>
+                    <span className="ml-1 text-xs sm:text-sm font-medium">{item.brand}</span>
                   </div>
                   <div>
-                    <span className="text-sm text-gray-500">Condition:</span>
-                    <span className="ml-1 text-sm font-medium">{item.condition}</span>
+                    <span className="text-xs sm:text-sm text-gray-500">Condition:</span>
+                    <span className="ml-1 text-xs sm:text-sm font-medium">{item.condition}</span>
                   </div>
                   <div>
-                    <span className="text-sm text-gray-500">Original Price:</span>
-                    <span className="ml-1 text-sm font-medium">{item.originalPrice}</span>
+                    <span className="text-xs sm:text-sm text-gray-500">Original Price:</span>
+                    <span className="ml-1 text-xs sm:text-sm font-medium">{item.originalPrice}</span>
                   </div>
                   <div>
-                    <span className="text-sm text-gray-500">Listed:</span>
-                    <span className="ml-1 text-sm font-medium">{new Date(item.dateAdded).toLocaleDateString()}</span>
+                    <span className="text-xs sm:text-sm text-gray-500">Listed:</span>
+                    <span className="ml-1 text-xs sm:text-sm font-medium">{new Date(item.dateAdded).toLocaleDateString()}</span>
                   </div>
                 </div>
                 
-                <div className="mt-4">
-                  <h2 className="text-lg font-medium text-gray-900">Description</h2>
-                  <p className="mt-1 text-gray-600">{item.description}</p>
+                <div className="mt-3 sm:mt-4">
+                  <h2 className="text-base sm:text-lg font-medium text-gray-900">Description</h2>
+                  <p className="mt-1 text-xs sm:text-sm text-gray-600">{item.description}</p>
                 </div>
               </div>
               
               {/* Uploader info */}
-              <div className="border-t border-gray-200 pt-4 mb-6">
-                <h2 className="text-lg font-medium text-gray-900 mb-2">Listed by</h2>
+              <div className="border-t border-gray-200 pt-3 sm:pt-4 mb-4 sm:mb-6">
+                <h2 className="text-base sm:text-lg font-medium text-gray-900 mb-2">Listed by</h2>
                 <div className="flex items-center">
                   <img 
                     src={item.uploader.profileImage} 
                     alt={item.uploader.name} 
-                    className="w-12 h-12 rounded-full object-cover mr-4"
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover mr-3 sm:mr-4"
                   />
                   <div>
-                    <div className="font-medium text-gray-900">{item.uploader.name}</div>
-                    <div className="flex items-center text-sm text-gray-500">
+                    <div className="font-medium text-sm sm:text-base text-gray-900">{item.uploader.name}</div>
+                    <div className="flex items-center text-xs sm:text-sm text-gray-500">
                       <span className="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                         </svg>
                         <span className="ml-1">{item.uploader.rating}</span>
@@ -292,23 +294,23 @@ const ItemDetail = () => {
                       <span className="mx-2">•</span>
                       <span>{item.uploader.successfulSwaps} successful swaps</span>
                     </div>
-                    <div className="text-xs text-gray-500">Member since {item.uploader.memberSince}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">Member since {item.uploader.memberSince}</div>
                   </div>
                 </div>
               </div>
 
               {/* Action buttons */}
-              <div className="mt-auto pt-4 border-t border-gray-200">
-                <div className="flex flex-col sm:flex-row gap-3">
+              <div className="mt-auto pt-3 sm:pt-4 border-t border-gray-200">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                   <button 
-                    className="flex-1 bg-[#1F77B4F2] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#1F77B4] transition-colors"
+                    className="flex-1 bg-[#1F77B4F2] text-white py-2.5 sm:py-3 px-4 rounded-lg text-sm sm:text-base font-medium hover:bg-[#1F77B4] transition-colors"
                     disabled={item.status !== 'Available'}
                     onClick={() => setShowSwapModal(true)}
                   >
                     Request to Swap
                   </button>
                   <button 
-                    className="flex-1 border border-[#1F77B4F2] text-[#1F77B4F2] py-3 px-4 rounded-lg font-medium hover:bg-blue-50 transition-colors"
+                    className="flex-1 border border-[#1F77B4F2] text-[#1F77B4F2] py-2.5 sm:py-3 px-4 rounded-lg text-sm sm:text-base font-medium hover:bg-blue-50 transition-colors"
                     disabled={item.status !== 'Available'}
                     onClick={() => setShowRedeemModal(true)}
                   >
@@ -316,7 +318,7 @@ const ItemDetail = () => {
                   </button>
                 </div>
                 {item.status !== 'Available' && (
-                  <p className="text-center text-sm text-red-500 mt-2">
+                  <p className="text-center text-xs sm:text-sm text-red-500 mt-2">
                     This item is currently not available for swap or redemption
                   </p>
                 )}
@@ -325,19 +327,48 @@ const ItemDetail = () => {
           </div>
         </div>
 
+        {/* Similar Items Section */}
+        <div className="mt-8">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">Similar Items</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            {similarItems.map(similarItem => (
+              <div 
+                key={similarItem.id}
+                className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => navigate(`/item/${similarItem.id}`)}
+              >
+                <div className="relative pb-[100%]">
+                  <img 
+                    src={similarItem.image} 
+                    alt={similarItem.name}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-2 sm:p-3">
+                  <h3 className="font-medium text-xs sm:text-sm text-gray-900 truncate">{similarItem.name}</h3>
+                  <div className="flex justify-between items-center mt-1">
+                    <span className="text-xs text-gray-500">{similarItem.size}</span>
+                    <span className="text-xs font-medium text-[#1F77B4F2]">{similarItem.pointsValue} pts</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Swap Modal */}
         {showSwapModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-            <div className="relative bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black bg-opacity-50">
+            <div className="relative bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
               {/* Modal header */}
-              <div className="px-6 py-4 border-b border-gray-200">
+              <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold text-gray-900">Request a Swap</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Request a Swap</h2>
                   <button
                     onClick={() => setShowSwapModal(false)}
-                    className="text-gray-400 hover:text-gray-500"
+                    className="text-gray-400 hover:text-gray-500 p-1"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
@@ -345,45 +376,45 @@ const ItemDetail = () => {
               </div>
 
               {/* Modal body */}
-              <div className="px-6 py-4">
+              <div className="px-4 sm:px-6 py-3 sm:py-4">
                 {requestSent ? (
-                  <div className="text-center py-8">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="text-center py-6 sm:py-8">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <h3 className="text-lg font-medium text-gray-900 mt-2">Swap request sent successfully!</h3>
-                    <p className="text-gray-600 mt-1">
+                    <h3 className="text-base sm:text-lg font-medium text-gray-900 mt-2">Swap request sent successfully!</h3>
+                    <p className="text-xs sm:text-sm text-gray-600 mt-1">
                       You'll receive a notification when {item.uploader.name} responds to your request.
                     </p>
                   </div>
                 ) : (
                   <>
                     {/* Item they want */}
-                    <div className="mb-6">
-                      <h3 className="text-md font-medium text-gray-900 mb-2">Item you want</h3>
-                      <div className="flex items-center p-3 border border-gray-200 rounded-lg">
+                    <div className="mb-4 sm:mb-6">
+                      <h3 className="text-sm sm:text-md font-medium text-gray-900 mb-2">Item you want</h3>
+                      <div className="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg">
                         <img
                           src={item.images[0]}
                           alt={item.name}
-                          className="w-16 h-16 object-cover rounded-md mr-4"
+                          className="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded-md mr-3 sm:mr-4"
                         />
                         <div>
-                          <div className="font-medium">{item.name}</div>
-                          <div className="text-sm text-gray-500">{item.condition} • {item.size}</div>
-                          <div className="text-sm font-medium text-[#1F77B4F2]">{item.pointsValue} points</div>
+                          <div className="font-medium text-sm sm:text-base">{item.name}</div>
+                          <div className="text-xs sm:text-sm text-gray-500">{item.condition} • {item.size}</div>
+                          <div className="text-xs sm:text-sm font-medium text-[#1F77B4F2]">{item.pointsValue} points</div>
                         </div>
                       </div>
                     </div>
 
                     {/* Select your item to swap */}
                     <div>
-                      <h3 className="text-md font-medium text-gray-900 mb-2">Select your item to swap</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <h3 className="text-sm sm:text-md font-medium text-gray-900 mb-2">Select your item to swap</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                         {userItems.map(userItem => (
                           <div
                             key={userItem.id}
                             onClick={() => setSelectedItem(userItem)}
-                            className={`flex items-center p-3 border rounded-lg cursor-pointer ${
+                            className={`flex items-center p-2 sm:p-3 border rounded-lg cursor-pointer transition-colors ${
                               selectedItem?.id === userItem.id
                                 ? 'border-[#1F77B4F2] bg-blue-50'
                                 : 'border-gray-200 hover:border-[#1F77B4F2]'
@@ -392,16 +423,16 @@ const ItemDetail = () => {
                             <img
                               src={userItem.image}
                               alt={userItem.name}
-                              className="w-16 h-16 object-cover rounded-md mr-4"
+                              className="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded-md mr-3 sm:mr-4"
                             />
                             <div>
-                              <div className="font-medium">{userItem.name}</div>
-                              <div className="text-sm text-gray-500">{userItem.condition}</div>
-                              <div className="text-sm font-medium text-[#1F77B4F2]">{userItem.pointsValue} points</div>
+                              <div className="font-medium text-sm sm:text-base">{userItem.name}</div>
+                              <div className="text-xs sm:text-sm text-gray-500">{userItem.condition}</div>
+                              <div className="text-xs sm:text-sm font-medium text-[#1F77B4F2]">{userItem.pointsValue} points</div>
                             </div>
                             {selectedItem?.id === userItem.id && (
                               <div className="ml-auto">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#1F77B4F2]" viewBox="0 0 20 20" fill="currentColor">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 text-[#1F77B4F2]" viewBox="0 0 20 20" fill="currentColor">
                                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                 </svg>
                               </div>
@@ -413,18 +444,18 @@ const ItemDetail = () => {
 
                     {/* Point difference calculation */}
                     {selectedItem && (
-                      <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-                        <h3 className="text-md font-medium text-gray-900 mb-2">Swap Summary</h3>
-                        <div className="flex justify-between items-center">
+                      <div className="mt-6 sm:mt-8 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                        <h3 className="text-sm sm:text-md font-medium text-gray-900 mb-2">Swap Summary</h3>
+                        <div className="flex justify-between items-center text-xs sm:text-sm">
                           <div>Item you want:</div>
                           <div className="font-medium">{item.pointsValue} points</div>
                         </div>
-                        <div className="flex justify-between items-center mt-1">
+                        <div className="flex justify-between items-center mt-1 text-xs sm:text-sm">
                           <div>Your item:</div>
                           <div className="font-medium">{selectedItem.pointsValue} points</div>
                         </div>
                         <div className="border-t border-gray-200 my-2"></div>
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center text-xs sm:text-sm">
                           <div>Point difference:</div>
                           <div className={`font-medium ${pointDifference > 0 ? 'text-red-600' : pointDifference < 0 ? 'text-green-600' : ''}`}>
                             {pointDifference > 0 ? `+${pointDifference} points needed` : 
@@ -433,12 +464,12 @@ const ItemDetail = () => {
                           </div>
                         </div>
                         {pointDifference > 0 && (
-                          <p className="mt-2 text-sm text-gray-600">
+                          <p className="mt-2 text-xs sm:text-sm text-gray-600">
                             You'll need to add {pointDifference} points to complete this swap.
                           </p>
                         )}
                         {pointDifference < 0 && (
-                          <p className="mt-2 text-sm text-gray-600">
+                          <p className="mt-2 text-xs sm:text-sm text-gray-600">
                             Great deal! Your item is worth more points than what you're requesting.
                           </p>
                         )}
@@ -450,17 +481,17 @@ const ItemDetail = () => {
 
               {/* Modal footer */}
               {!requestSent && (
-                <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+                <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 flex justify-end">
                   <button
                     onClick={() => setShowSwapModal(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 mr-2 hover:bg-gray-50"
+                    className="px-3 sm:px-4 py-1.5 sm:py-2 border border-gray-300 rounded-md text-sm text-gray-700 mr-2 hover:bg-gray-50 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleSwapRequest}
                     disabled={!selectedItem}
-                    className={`px-4 py-2 rounded-md text-white ${
+                    className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-md text-sm text-white transition-colors ${
                       selectedItem ? 'bg-[#1F77B4F2] hover:bg-[#1F77B4]' : 'bg-gray-300 cursor-not-allowed'
                     }`}
                   >
@@ -474,17 +505,17 @@ const ItemDetail = () => {
 
         {/* Redeem with Points Modal */}
         {showRedeemModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-            <div className="relative bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black bg-opacity-50">
+            <div className="relative bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
               {/* Modal header */}
-              <div className="px-6 py-4 border-b border-gray-200">
+              <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold text-gray-900">Redeem with Points</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Redeem with Points</h2>
                   <button
                     onClick={() => setShowRedeemModal(false)}
-                    className="text-gray-400 hover:text-gray-500"
+                    className="text-gray-400 hover:text-gray-500 p-1"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
@@ -492,14 +523,14 @@ const ItemDetail = () => {
               </div>
 
               {/* Modal body */}
-              <div className="px-6 py-4">
+              <div className="px-4 sm:px-6 py-3 sm:py-4">
                 {redemptionComplete ? (
-                  <div className="text-center py-8">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="text-center py-6 sm:py-8">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <h3 className="text-lg font-medium text-gray-900 mt-2">Item redeemed successfully!</h3>
-                    <p className="text-gray-600 mt-1">
+                    <h3 className="text-lg sm:text-xl font-medium text-gray-900 mt-2">Item redeemed successfully!</h3>
+                    <p className="text-sm text-gray-600 mt-1">
                       {item.name} has been redeemed for {item.pointsValue} points.
                       Your remaining balance is {userPoints} points.
                     </p>

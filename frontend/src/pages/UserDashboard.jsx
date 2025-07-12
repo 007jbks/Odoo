@@ -12,6 +12,8 @@ const UserDashboard = () => {
     joinDate: 'January 2023',
     points: 450,
     level: 'Gold',
+    isPremium: false,
+    listingsRemaining: 5
   });
 
   // Mock user uploaded items
@@ -97,6 +99,15 @@ const UserDashboard = () => {
 
   // Tabs for uploaded items and swap history
   const [activeTab, setActiveTab] = useState('uploaded');
+  
+  // Handle upgrade to premium
+  const handleUpgradeToPremium = () => {
+    // In a real app, this would navigate to a payment page or open a payment modal
+    if (window.confirm('Upgrade to Premium for unlimited listings? This would normally redirect to a payment page.')) {
+      setUser({...user, isPremium: true, listingsRemaining: Infinity});
+      alert('Congratulations! You are now a Premium user with unlimited listings!');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -113,6 +124,19 @@ const UserDashboard = () => {
               <div>
                 <h1 className="text-2xl font-bold">{user.name}</h1>
                 <p className="text-blue-100">Member since {user.joinDate}</p>
+                <div className="mt-2 flex items-center">
+                  <span className={`${user.isPremium ? 'bg-yellow-400 text-gray-900' : 'bg-gray-200 text-gray-700'} px-3 py-1 rounded-full text-xs font-bold`}>
+                    {user.isPremium ? 'PREMIUM USER' : 'BASIC USER'}
+                  </span>
+                  {!user.isPremium && (
+                    <button 
+                      onClick={handleUpgradeToPremium}
+                      className="ml-2 bg-yellow-400 text-gray-900 px-3 py-1 rounded-full text-xs font-bold hover:bg-yellow-500 transition-colors"
+                    >
+                      UPGRADE NOW
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -151,6 +175,29 @@ const UserDashboard = () => {
             <div className="text-2xl font-semibold text-[#1F77B4F2]">+{user.points}</div>
           </div>
         </div>
+
+        {/* Listings Remaining - Show only for non-premium users */}
+        {!user.isPremium && (
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">Listings Remaining</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  New users are limited to 5 active listings. Upgrade to Premium for unlimited listings.
+                </p>
+              </div>
+              <div className="flex items-center">
+                <div className="text-2xl font-bold mr-3">{user.listingsRemaining}/5</div>
+                <button 
+                  onClick={handleUpgradeToPremium}
+                  className="bg-[#1F77B4F2] text-white px-4 py-2 rounded-md text-sm hover:bg-[#1F77B4] transition-colors"
+                >
+                  Upgrade to Premium
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="mb-6 border-b border-gray-200">
@@ -239,25 +286,57 @@ const UserDashboard = () => {
             ))}
             
             {/* Add New Item Card */}
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden border-2 border-dashed border-gray-300 flex items-center justify-center h-[400px]">
-              <div className="text-center">
-                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-[#1F77B4F2]/10 text-[#1F77B4F2]">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                  </svg>
-                </div>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">Add new item</h3>
-                <p className="mt-1 text-sm text-gray-500">List a clothing item to swap or earn points</p>
-                <div className="mt-6">
-                  <button 
-                    className="px-4 py-2 bg-[#1F77B4F2] text-white rounded-md text-sm hover:bg-[#1F77B4] transition-colors"
-                    onClick={() => navigate('/add-item')}
-                  >
-                    Upload Item
-                  </button>
+            {(user.isPremium || user.listingsRemaining > 0) ? (
+              <div className="bg-white rounded-lg shadow-sm overflow-hidden border-2 border-dashed border-gray-300 flex items-center justify-center h-[400px]">
+                <div className="text-center">
+                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-[#1F77B4F2]/10 text-[#1F77B4F2]">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                  </div>
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">Add new item</h3>
+                  <p className="mt-1 text-sm text-gray-500">List a clothing item to swap or earn points</p>
+                  <div className="mt-6">
+                    <button 
+                      className="px-4 py-2 bg-[#1F77B4F2] text-white rounded-md text-sm hover:bg-[#1F77B4] transition-colors"
+                      onClick={() => navigate('/add-item')}
+                    >
+                      Upload Item
+                    </button>
+                  </div>
+                  {!user.isPremium && (
+                    <p className="mt-2 text-xs text-gray-500">
+                      {user.listingsRemaining} listing{user.listingsRemaining !== 1 ? 's' : ''} remaining
+                    </p>
+                  )}
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="bg-white rounded-lg shadow-sm overflow-hidden border-2 border-dashed border-gray-300 flex items-center justify-center h-[400px]">
+                <div className="text-center px-6">
+                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100 text-gray-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                  </div>
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">Listing limit reached</h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    You've reached your limit of 5 listings as a basic user
+                  </p>
+                  <div className="mt-6">
+                    <button 
+                      className="px-4 py-2 bg-yellow-500 text-white rounded-md text-sm hover:bg-yellow-600 transition-colors"
+                      onClick={handleUpgradeToPremium}
+                    >
+                      Upgrade to Premium
+                    </button>
+                  </div>
+                  <p className="mt-2 text-xs text-gray-500">
+                    Get unlimited listings with Premium
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -354,6 +433,14 @@ const UserDashboard = () => {
           <button className="px-6 py-3 border border-[#1F77B4F2] text-[#1F77B4F2] rounded-lg shadow hover:bg-blue-50 transition-colors">
             Edit Profile
           </button>
+          {!user.isPremium && (
+            <button 
+              className="px-6 py-3 bg-yellow-500 text-white rounded-lg shadow hover:bg-yellow-600 transition-colors"
+              onClick={handleUpgradeToPremium}
+            >
+              Upgrade to Premium
+            </button>
+          )}
         </div>
       </div>
     </div>

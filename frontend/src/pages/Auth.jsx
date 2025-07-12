@@ -192,7 +192,7 @@ const SignUpForm = ({ onToggle }) => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          userName: formData.email, // Assuming username is same as email
+          userName: "john_doe", // Assuming username is same as email
           email: formData.email,
           password: formData.password,
         })

@@ -1,10 +1,19 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional,List    
 
 class UserCreate(BaseModel):
-    username:str
-    email:EmailStr
-    password:str
+    username: str
+    email: EmailStr
+    password: str
+
+    # Optional extended fields
+    points: int = 0
+    reputation: float = 0.0
+    sell_history: List[str] = []  # list of item IDs sold
+    buy_history: List[str] = []   # list of item IDs bought
+    address: Optional[str] = None
+    premium_status: bool = False
+    listing_number :int = 0
 
 class UserLogin(BaseModel):
     username: Optional[str] = None

@@ -14,6 +14,7 @@ items = db["items"]
 def hello():
 	return {"message":"Hello world"}
 
+
 @app.post("/signup")
 def signup(user: UserCreate):
     # Check if email or username already exists
@@ -26,15 +27,22 @@ def signup(user: UserCreate):
     # Hash the password
     hashed_password = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-    # Generate auth token (optional but useful)
+    # Generate auth token
     auth_token = secrets.token_hex(32)
 
-    # Prepare the user document
+    # Prepare the user document with default fields
     user_doc = {
         "username": user.username,
         "email": user.email,
         "password": hashed_password,
-        "auth_token": auth_token
+        "auth_token": auth_token,
+        "points": 100,  # Base points
+        "reputation": 0.0,
+        "sell_history": [],
+        "buy_history": [],
+        "address": user.address,
+        "premium_status": False,
+        "listing_number": 0
     }
 
     # Insert into MongoDB
@@ -43,9 +51,8 @@ def signup(user: UserCreate):
     return {
         "msg": "User registered successfully",
         "id": str(result.inserted_id),
-        "token": auth_token  # Optional: Only if you're doing token-based auth
+        "token": auth_token
     }
-
 @app.post("/login")
 def login(user: UserLogin):
     query = {"email": user.email} if user.email else {"username": user.username}

@@ -102,8 +102,8 @@ This section explains how to set up the ReWear platform locally for development 
 
 ### 1️⃣ Clone the Repository
 
-git clone https://github.com/your-username/rewear.git
-cd rewear 
+git clone https://www.github.com/007jbks/Odoo
+cd Odoo
 
 ### 2️⃣ Backend Setup (FastAPI)
 📦 Install Dependencies
@@ -112,11 +112,14 @@ cd backend
 pip install -r requirements.txt
 ### 📁 Create .env file
 Create a .env file in the backend/ directory with the following content:
-
-EMAIL_PASS=your_gmail_app_password
-ADMIN_USERNAME=your_admin_username
-ADMIN_PASSWORD=your_admin_password
-ADMIN_TOKEN=your_secret_admin_token
+MONGO_URI
+MONGO_DB_NAME
+CLOUDINARY_KEY 
+CLOUDINARY_SECRET
+EMAIL_PASS
+ADMIN_USERNAME
+ADMIN_PASSWORD
+ADMIN_TOKEN
 ### ▶️ Run the Backend Server
 
 uvicorn main:app --reload
@@ -130,7 +133,119 @@ npm install
 npm start
 App will be running at: http://localhost:5173
 
+## The Smart Contract
+This smart contract is designed for centralized platforms where a backend service controls user balances.
 
+All balance changes (additions and subtractions) are transparent and recorded on-chain via events.
 
+Wallet addresses are deterministically generated per userId to maintain uniqueness and predictability.
+
+No ERC-20 or token transfer logic is included — this is a ledger-style accounting system only.
+
+Ideal for use cases such as:
+
+Reward points or loyalty systems
+
+Internal e-commerce credits
+
+Non-transferable digital tokens
+
+Compatible with backend event listeners to sync blockchain state with off-chain databases.
+
+Ownership control ensures that only the platform administrator (owner) can modify balances or register wallets.
+
+## 🚀 How to Use the smart contract
+
+Follow these steps to deploy and interact with the ECommerceWallet smart contract:
+
+### 1. Deploy the Contract
+
+Deploy the ECommerceWallet contract using Remix, Hardhat, Foundry, or any other Solidity development tool.
+
+- Make sure you are using Solidity version 0.8.28.
+- The deployer becomes the contract owner.
+
+Example using Remix:
+
+1. Paste the contract code into a new `.sol` file.
+2. Compile using Solidity 0.8.28.
+3. Deploy the `ECommerceWallet` contract.
+
+---
+
+### 2. Create a Wallet for a User
+
+Use the `createWallet` function to register a wallet address for a user:
+
+```solidity
+ecommerceWallet.createWallet("user123@example.com");
+```
+
+- This generates a unique address for the user and maps it to their userId.
+- Emits `WalletCreated` event.
+
+---
+
+### 3. Add Tokens to a User's Balance
+
+Add tokens by user address:
+
+```solidity
+ecommerceWallet.addTokens(0xUserAddress, 1000);
+```
+
+Or by userId (recommended):
+
+```solidity
+ecommerceWallet.addTokensByUserId("user123@example.com", 1000);
+```
+
+- Emits `TokensAdded` event with updated balance.
+
+---
+
+### 4. Subtract Tokens from a User's Balance
+
+Subtract tokens by user address:
+
+```solidity
+ecommerceWallet.subtractTokens(0xUserAddress, 500);
+```
+
+Or by userId:
+
+```solidity
+ecommerceWallet.subtractTokensByUserId("user123@example.com", 500);
+```
+
+- Emits `TokensSubtracted` event.
+
+---
+
+### 5. Query Balances
+
+Check balance by address:
+
+```solidity
+uint256 balance = ecommerceWallet.getBalance(0xUserAddress);
+```
+
+Or by userId:
+
+```solidity
+uint256 balance = ecommerceWallet.getBalanceByUserId("user123@example.com");
+```
+
+---
+
+### 6. Transfer Ownership
+
+To transfer ownership to another address:
+
+```solidity
+ecommerceWallet.transferOwnership(0xNewOwner);
+```
+
+- Only callable by the current owner.
 
 
